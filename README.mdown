@@ -1,0 +1,10 @@
+## Hubot XMPP
+
+Connect Hubot to your XMPP network 
+
+### Setup
+
+Install dependencies with `npm`
+
+	npm install
+
