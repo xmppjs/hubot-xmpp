@@ -1,5 +1,7 @@
-Adapter = require('hubot').adapter
-Xmpp  = require 'node-xmpp'
+Robot   = require('hubot').robot()
+Adapter = require('hubot').adapter()
+
+Xmpp    = require 'node-xmpp'
 
 class XmppBot extends Adapter
   run: ->
