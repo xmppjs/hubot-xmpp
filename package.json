@@ -1,6 +1,6 @@
 {
   "name": "hubot-xmpp",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Mark Story <mark@mark-story.com> (http://mark-story.com)",
   "description": "XMPP adapter for Hubot.",
   "keywords": "hubot xmpp adapter",
@@ -15,7 +15,7 @@
   "main": "./src/xmpp.coffee",
   "engine": "node > 0.6.0 < 0.7.0",
   "dependencies": {
-    "hubot": "2.0.0",
+    "hubot": "2.0.4",
     "node-xmpp": "0.2.11"
   },
   "devDependencies": {
