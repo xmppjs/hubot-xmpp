@@ -1,5 +1,6 @@
 Robot   = require('hubot').robot()
 Adapter = require('hubot').adapter()
+util    = require 'util'
 
 Xmpp    = require 'node-xmpp'
 
@@ -13,7 +14,7 @@ class XmppBot extends Adapter
       rooms:    @parseRooms process.env.HUBOT_XMPP_ROOMS.split(',')
       keepaliveInterval: 30000 # ms interval to send whitespace to xmpp server
 
-    console.log options
+    @robot.logger.info util.inspect(options)
 
     @client = new Xmpp.Client
       jid: options.username
@@ -28,10 +29,10 @@ class XmppBot extends Adapter
     @options = options
 
   error: (error) =>
-    console.error error
+    @robot.logger.error error
 
   online: =>
-    console.log 'Hubot XMPP client online'
+    @robot.logger.info 'Hubot XMPP client online'
 
     @client.send new Xmpp.Element('presence', type: 'available' )
       .c('show').t('chat')
@@ -64,7 +65,7 @@ class XmppBot extends Adapter
 
   read: (stanza) =>
     if stanza.attrs.type is 'error'
-      console.error '[xmpp error]' + stanza
+      @robot.logger.error '[xmpp error]' + stanza
       return
 
     switch stanza.name
@@ -90,9 +91,9 @@ class XmppBot extends Adapter
       message = body.getText()
 
       [room, from] = stanza.attrs.from.split '/'
-      
+
       # ignore our own messages in rooms
-      return if from == @robot.username
+      return if from == @robot.name or from == @options.username
 
       # note that 'from' isn't a full JID, just the local user part
       user = @userForId from
@@ -113,7 +114,7 @@ class XmppBot extends Adapter
 
     switch stanza.attrs.type
       when 'subscribe'
-        console.log "#{stanza.attrs.from} subscribed to us"
+        @robot.logger.debug "#{stanza.attrs.from} subscribed to us"
 
         @client.send new Xmpp.Element('presence',
             from: stanza.attrs.to
@@ -143,14 +144,14 @@ class XmppBot extends Adapter
         jid = new Xmpp.JID(from)
         userId = userName = jid.user
 
-        console.log "Availability received for #{userId}"
+        @robot.logger.debug "Availability received for #{userId}"
 
         user = @userForId userId, name: userName
         user.jid = jid.toString()
 
   send: (user, strings...) ->
     for str in strings
-      console.log "Sending to #{user.room}: #{str}"
+      @robot.logger.debug "Sending to #{user.room}: #{str}"
 
       params =
         to: if user.type in ['direct', 'chat'] then "#{user.room}/#{user.id}" else user.room
