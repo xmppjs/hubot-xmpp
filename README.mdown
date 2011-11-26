@@ -1,10 +1,29 @@
 ## Hubot XMPP
 
-Connect Hubot to your XMPP network 
+Connects Hubot to your XMPP network 
 
 ### Setup
 
 Install dependencies with `npm`
 
 	npm install
+
+### Configuration
+
+There are a few configuration values you can use when getting hubot-xmpp
+running. The XMPP adapter requires only 3 (5 if you need specify server
+and port) environment variables to be set to able to use it.
+
+* `HUBOT_XMPP_USERNAME`
+* `HUBOT_XMPP_PASSWORD`
+* `HUBOT_XMPP_ROOMS`
+
+Optional:
+
+* `HUBOT_XMPP_HOST`
+* `HUBOT_XMPP_PORT`
+
+`HUBOT_XMPP_ROOMS` can be a comma separated list of rooms to join.  If
+your rooms require passwords you should use the `jid:password` syntax.
+Room passwords cannot contain `,`.
 
