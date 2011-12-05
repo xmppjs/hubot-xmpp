@@ -1,8 +1,7 @@
 Robot   = require('hubot').robot()
 Adapter = require('hubot').adapter()
-util    = require 'util'
-
 Xmpp    = require 'node-xmpp'
+util    = require 'util'
 
 class XmppBot extends Adapter
   run: ->
@@ -63,7 +62,7 @@ class XmppBot extends Adapter
         password: if index > 0 then room.slice(index+1) else false
     return rooms
 
-  read: (stanza) =>
+  read: (stanza) ->
     if stanza.attrs.type is 'error'
       @robot.logger.error '[xmpp error]' + stanza
       return
@@ -74,12 +73,12 @@ class XmppBot extends Adapter
       when 'presence'
         @readPresence stanza
 
-  readMessage: (stanza) =>
-     # ignore non-messages
+  readMessage: (stanza) ->
+      # ignore non-messages
       return if stanza.attrs.type not in ['groupchat', 'direct', 'chat']
 
       # ignore our own messages
-      return if @options.username in stanza.attrs.from
+      return if stanza.attrs.from.indexOf(@options.username) >= 0
 
       # ignore messages from the server. on Openfire, this includes "This room is not anonymous"
       return if stanza.attrs.from in @options.rooms
@@ -102,7 +101,7 @@ class XmppBot extends Adapter
 
       @receive new Robot.TextMessage user, message
 
-  readPresence: (stanza) =>
+  readPresence: (stanza) ->
     jid = new Xmpp.JID(stanza.attrs.from)
     bareJid = jid.bare().toString()
 
