@@ -72,5 +72,23 @@ describe 'XmppBot', () ->
         assert.equal message.text, 'message text'
         done()
       bot.readMessage stanza
-    
+
+  describe '#reply()', () ->
+    bot = Bot.use()
+    user =
+      name: 'mark'
+
+    it 'should call send()', (done) ->
+      bot.send = (user, message) ->
+        assert.equal message, 'mark: one'
+        done()
+      bot.reply user, 'one'
+
+    it 'should call send() multiple times', (done) ->
+      called = 0
+      bot.send = (user, message) ->
+        called += 1
+        done() if called == 2
+      bot.reply user, 'one', 'two'
+
 
