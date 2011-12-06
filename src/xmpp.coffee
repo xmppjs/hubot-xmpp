@@ -74,32 +74,32 @@ class XmppBot extends Adapter
         @readPresence stanza
 
   readMessage: (stanza) ->
-      # ignore non-messages
-      return if stanza.attrs.type not in ['groupchat', 'direct', 'chat']
+    # ignore non-messages
+    return if stanza.attrs.type not in ['groupchat', 'direct', 'chat']
 
-      # ignore our own messages
-      return if stanza.attrs.from.indexOf(@options.username) >= 0
+    # ignore our own messages
+    return if stanza.attrs.from.indexOf(@options.username) >= 0
 
-      # ignore messages from the server. on Openfire, this includes "This room is not anonymous"
-      return if stanza.attrs.from in @options.rooms
+    # ignore messages from the server. on Openfire, this includes "This room is not anonymous"
+    return if stanza.attrs.from in @options.rooms
 
-      # ignore empty bodies (i.e., topic changes -- maybe watch these someday)
-      body = stanza.getChild 'body'
-      return unless body
+    # ignore empty bodies (i.e., topic changes -- maybe watch these someday)
+    body = stanza.getChild 'body'
+    return unless body
 
-      message = body.getText()
+    message = body.getText()
 
-      [room, from] = stanza.attrs.from.split '/'
+    [room, from] = stanza.attrs.from.split '/'
 
-      # ignore our own messages in rooms
-      return if from == @robot.name or from == @options.username
+    # ignore our own messages in rooms
+    return if from == @robot.name or from == @options.username
 
-      # note that 'from' isn't a full JID, just the local user part
-      user = @userForId from
-      user.room = room
-      user.type = stanza.attrs.type
+    # note that 'from' isn't a full JID, just the local user part
+    user = @userForId from
+    user.room = room
+    user.type = stanza.attrs.type
 
-      @receive new Robot.TextMessage user, message
+    @receive new Robot.TextMessage user, message
 
   readPresence: (stanza) ->
     jid = new Xmpp.JID(stanza.attrs.from)
