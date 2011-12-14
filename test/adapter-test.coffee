@@ -1,4 +1,6 @@
 Bot = require '../src/xmpp'
+Hubot = require 'hubot'
+Robot = Hubot.robot()
 assert = require 'assert'
 
 describe 'XmppBot', ->
@@ -21,7 +23,7 @@ describe 'XmppBot', ->
     bot = Bot.use()
     bot.options =
       username: 'bot'
-      rooms: ['test@example.com']
+      rooms: [ {jid:'test@example.com', password: false} ]
 
     bot.receive = ->
       throw new Error 'bad'
@@ -153,13 +155,14 @@ describe 'XmppBot', ->
       bot.read stanza
 
   describe '#readPresence()', ->
-    robot = 
+    robot =
+      name: 'bot'
       logger:
         debug: ->
 
     bot = Bot.use(robot)
     bot.options =
-      rooms: ['test@example.com']
+      rooms: [ {jid: 'test@example.com', password: false} ]
     bot.client =
       send: ->
 
@@ -196,12 +199,83 @@ describe 'XmppBot', ->
         attrs:
           type: 'available'
           to: 'bot@example.com'
-          from: 'mark@example.com/456'
+          from: 'room@example.com/mark'
           id: '12345'
       bot.userForId = (id, user) ->
-        assert.equal user.name, 'mark'
+        assert.equal id, 'mark'
         user
       bot.readPresence stanza
 
+    it 'should not trigger @recieve for presences coming from a room the bot is not in', () ->
+      bot.receive = (msg) ->
+        throw new Error('should not get here')
 
+      stanza =
+        attrs:
+          type: 'available'
+          to: 'bot@example.com'
+          from: 'room@example.com/mark'
+          id: '12345'
+      bot.readPresence stanza
+
+    it 'should set @heardOwnPresence when the bot presence is received', () ->
+      stanza =
+        attrs:
+          type: 'available'
+          to: 'bot@example.com'
+          from: 'test@example.com/bot'
+
+      bot.readPresence stanza
+      assert.ok bot.heardOwnPresence
+
+    # Don't trigger enter messages in a room, until we get our
+    # own enter message.
+    it 'should not send event if we have not heard our own presence', () ->
+      bot.heardOwnPresence = false
+      bot.receive = (msg) ->
+        throw new Error('Should not send a message yet')
+
+      stanza =
+        attrs:
+          type: 'available'
+          to: 'bot@example.com'
+          from: 'test@example.com/mark'
+
+      bot.readPresence stanza
+
+    it 'should call @receive when someone joins', () ->
+      bot.heardOwnPresence = true
+
+      bot.receive = (msg) ->
+        assert.ok msg instanceof Robot.EnterMessage
+        assert.equal msg.user.room, 'test@example.com'
+
+      bot.userForId = (id, user) ->
+        assert.equal id, 'mark'
+        user
+
+      stanza =
+        attrs:
+          type: 'available'
+          to: 'bot@example.com'
+          from: 'test@example.com/mark'
+
+      bot.readPresence stanza
+
+    it 'should call @receive when someone leaves', () ->
+      bot.receive = (msg) ->
+        assert.ok msg instanceof Robot.LeaveMessage
+        assert.equal msg.user.room, 'test@example.com'
+
+      bot.userForId = (id, user) ->
+        assert.equal id, 'mark'
+        user
+
+      stanza =
+        attrs:
+          type: 'unavailable'
+          to: 'bot@example.com'
+          from: 'test@example.com/mark'
+
+      bot.readPresence stanza
 

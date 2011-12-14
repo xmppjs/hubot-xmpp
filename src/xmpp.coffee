@@ -77,9 +77,6 @@ class XmppBot extends Adapter
     # ignore non-messages
     return if stanza.attrs.type not in ['groupchat', 'direct', 'chat']
 
-    # ignore messages from the server. on Openfire, this includes "This room is not anonymous"
-    return if stanza.attrs.from in @options.rooms
-
     # ignore empty bodies (i.e., topic changes -- maybe watch these someday)
     body = stanza.getChild 'body'
     return unless body
@@ -89,12 +86,12 @@ class XmppBot extends Adapter
     [room, from] = stanza.attrs.from.split '/'
 
     # ignore our own messages in rooms
-    return if from == @robot.name or from == @options.username
+    return if from == @robot.name or from == @options.username or from is undefined
 
     # note that 'from' isn't a full JID, just the local user part
     user = @userForId from
-    user.room = room
     user.type = stanza.attrs.type
+    user.room = room
 
     @receive new Robot.TextMessage user, message
 
@@ -107,6 +104,16 @@ class XmppBot extends Adapter
     # presences for all members
     # http://xmpp.org/rfcs/rfc3921.html#rfc.section.2.2.1
     stanza.attrs.type ?= 'available'
+
+    # Parse a stanza and figure out where it came from.
+    getFrom = (stanza) =>
+      if bareJid not in @options.rooms
+        from = stanza.attrs.from
+      else
+        # room presence is stupid, and optional for some anonymous rooms
+        # http://xmpp.org/extensions/xep-0045.html#enter-nonanon
+        from = stanza.getChild('x', 'http://jabber.org/protocol/muc#user')?.getChild('item')?.attrs?.jid
+      return from
 
     switch stanza.attrs.type
       when 'subscribe'
@@ -125,25 +132,53 @@ class XmppBot extends Adapter
             id:   stanza.attrs.id
         )
       when 'available'
-        if bareJid not in @options.rooms
-          from = stanza.attrs.from
-        else
-          # room presence is stupid, and optional for some anonymous rooms
-          # http://xmpp.org/extensions/xep-0045.html#enter-nonanon
-          from = stanza.getChild('x', 'http://jabber.org/protocol/muc#user')?.getChild('item')?.attrs?.jid
-
-        return if not from?
-
         # for now, user IDs and user names are the same. we don't
         # use full JIDs as user ID, since we don't get them in
         # standard groupchat messages
-        jid = new Xmpp.JID(from)
-        userId = userName = jid.user
+        from = getFrom(stanza)
+        return if not from?
 
-        @robot.logger.debug "Availability received for #{userId}"
+        [room, from] = from.split '/'
 
-        user = @userForId userId, name: userName
-        user.jid = jid.toString()
+        # ignore presence messages that sometimes get broadcast
+        return if not @messageFromRoom room
+
+        # If the presence is from us, track that.
+        # Xmpp sends presence for every person in a room, when join it
+        # Only after we've heard our own presence should we respond to 
+        # presence messages.
+        if from == @robot.name or from == @options.username
+          @heardOwnPresence = true
+          return
+
+        return unless @heardOwnPresence
+
+        @robot.logger.debug "Availability received for #{from}"
+
+        user = @userForId from, room: room, jid: jid.toString()
+        @receive new Robot.EnterMessage user
+
+      when 'unavailable'
+        from = getFrom(stanza)
+
+        [room, from] = from.split '/'
+
+        # ignore presence messages that sometimes get broadcast
+        return if not @messageFromRoom room
+
+        # ignore our own messages in rooms
+        return if from == @robot.name or from == @options.username
+
+        @robot.logger.debug "Unavailability received for #{from}"
+
+        user = @userForId from, room: room, jid: jid.toString()
+        @receive new Robot.LeaveMessage(user)
+
+  # Checks that the room parameter is a room the bot is in.
+  messageFromRoom: (room) ->
+    for joined in @options.rooms
+      return true if joined.jid == room
+    return false
 
   send: (user, strings...) ->
     for str in strings
