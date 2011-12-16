@@ -28,7 +28,7 @@ class XmppBot extends Adapter
     @options = options
 
   error: (error) =>
-    @robot.logger.error error
+    @robot.logger.error error.toString()
 
   online: =>
     @robot.logger.info 'Hubot XMPP client online'
