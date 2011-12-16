@@ -279,3 +279,49 @@ describe 'XmppBot', ->
 
       bot.readPresence stanza
 
+  describe '#send()', () ->
+    bot = Bot.use()
+    bot.options =
+      username: 'bot'
+      rooms: [ {jid:'test@example.com', password: false} ]
+
+    bot.client =
+      send: ->
+
+    bot.robot =
+      logger:
+        debug: ->
+
+    it 'should send messages directly', (done) ->
+      user =
+        id: 'mark'
+        room: 'test@example.com'
+        type: 'direct'
+
+      bot.client.send = (msg) ->
+        assert.equal msg.parent.attrs.to, 'test@example.com/mark'
+        assert.equal msg.parent.attrs.type, 'direct'
+        assert.equal msg.parent.attrs.from, bot.options.username
+        assert.equal msg.getText(), 'testing'
+        done()
+
+      bot.send user, 'testing'
+
+    it 'should send messages to the room', (done) ->
+      user =
+        id: 'mark'
+        room: 'test@example.com'
+        type: 'groupchat'
+
+      bot.client.send = (msg) ->
+        assert.equal msg.parent.attrs.to, 'test@example.com'
+        assert.equal msg.parent.attrs.type, 'groupchat'
+        assert.equal msg.parent.attrs.from, bot.options.username
+        assert.equal msg.getText(), 'testing'
+        done()
+
+      bot.send user, 'testing'
+
+
+
+
