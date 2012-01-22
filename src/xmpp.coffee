@@ -186,7 +186,7 @@ class XmppBot extends Adapter
 
       params =
         to: if user.type in ['direct', 'chat'] then "#{user.room}/#{user.id}" else user.room
-        type: user.type
+        type: user.type or 'groupchat'
         from: @options.username
 
       message = new Xmpp.Element('message', params).
