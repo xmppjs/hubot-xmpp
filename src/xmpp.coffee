@@ -5,6 +5,8 @@ util    = require 'util'
 
 class XmppBot extends Adapter
   run: ->
+    self = @
+
     options =
       username: process.env.HUBOT_XMPP_USERNAME
       password: process.env.HUBOT_XMPP_PASSWORD
@@ -26,6 +28,8 @@ class XmppBot extends Adapter
     @client.on 'stanza', @.read
 
     @options = options
+
+    self.emit "connected"
 
   error: (error) =>
     @robot.logger.error error.toString()
