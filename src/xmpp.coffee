@@ -57,6 +57,8 @@ class XmppBot extends Adapter
       @client.send ' '
     , @options.keepaliveInterval
 
+    @emit 'connected'
+
   parseRooms: (items) ->
     rooms = []
     for room in items
