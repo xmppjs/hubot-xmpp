@@ -29,8 +29,6 @@ class XmppBot extends Adapter
 
     @options = options
 
-    self.emit "connected"
-
   error: (error) =>
     @robot.logger.error error.toString()
 
