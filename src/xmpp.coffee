@@ -35,8 +35,8 @@ class XmppBot extends Adapter
   online: =>
     @robot.logger.info 'Hubot XMPP client online'
 
-    @client.send new Xmpp.Element('presence', type: 'available' )
-      .c('show').t('chat')
+    @client.send new Xmpp.Element('presence')
+    @robot.logger.info 'Hubot XMPP sent initial presence'
 
     # join each room
     # http://xmpp.org/extensions/xep-0045.html for XMPP chat standard
@@ -149,7 +149,7 @@ class XmppBot extends Adapter
 
         # If the presence is from us, track that.
         # Xmpp sends presence for every person in a room, when join it
-        # Only after we've heard our own presence should we respond to 
+        # Only after we've heard our own presence should we respond to
         # presence messages.
         if from == @robot.name or from == @options.username
           @heardOwnPresence = true
@@ -191,7 +191,6 @@ class XmppBot extends Adapter
       params =
         to: if user.type in ['direct', 'chat'] then "#{user.room}/#{user.id}" else user.room
         type: user.type or 'groupchat'
-        from: @options.username
 
       message = new Xmpp.Element('message', params).
                 c('body').t(str)
