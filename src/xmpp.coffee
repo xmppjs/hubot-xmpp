@@ -5,8 +5,6 @@ util    = require 'util'
 
 class XmppBot extends Adapter
   run: ->
-    self = @
-
     options =
       username: process.env.HUBOT_XMPP_USERNAME
       password: process.env.HUBOT_XMPP_PASSWORD
@@ -42,6 +40,8 @@ class XmppBot extends Adapter
     # http://xmpp.org/extensions/xep-0045.html for XMPP chat standard
     for room in @options.rooms
       @client.send do =>
+        @robot.logger.debug "Joining #{room.jid}/#{@robot.name}"
+
         el = new Xmpp.Element('presence', to: "#{room.jid}/#{@robot.name}" )
         x = el.c('x', xmlns: 'http://jabber.org/protocol/muc' )
         x.c('history', seconds: 1 ) # prevent the server from confusing us with old messages
@@ -86,8 +86,8 @@ class XmppBot extends Adapter
     return unless body
 
     message = body.getText()
-
     [room, from] = stanza.attrs.from.split '/'
+    @robot.logger.debug "Received message: #{message} in room: #{room}, from: #{from}"
 
     # ignore our own messages in rooms
     return if from == @robot.name or from == @options.username or from is undefined
@@ -121,7 +121,7 @@ class XmppBot extends Adapter
 
     switch stanza.attrs.type
       when 'subscribe'
-        @robot.logger.debug "#{stanza.attrs.from} subscribed to us"
+        @robot.logger.debug "#{stanza.attrs.from} subscribed to me"
 
         @client.send new Xmpp.Element('presence',
             from: stanza.attrs.to
@@ -130,6 +130,8 @@ class XmppBot extends Adapter
             type: 'subscribed'
         )
       when 'probe'
+        @robot.logger.debug "#{stanza.attrs.from} probed me"
+
         @client.send new Xmpp.Element('presence',
             from: stanza.attrs.to
             to:   stanza.attrs.from
