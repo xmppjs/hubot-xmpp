@@ -1,0 +1,150 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node',
+1 verbose cli   '/Users/jlawson/local/node/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   'node-stringprep' ]
+2 info using npm@1.1.36
+3 info using node@v0.6.5
+4 verbose config file /Users/jlawson/.npmrc
+5 verbose config file /Users/jlawson/local/node/etc/npmrc
+6 verbose config file /Users/jlawson/local/node/lib/node_modules/npm/npmrc
+7 verbose read json /Users/jlawson/Projects/hubot-xmpp/package.json
+8 verbose read json /Users/jlawson/Projects/hubot-xmpp/node_modules/coffee-script/package.json
+9 verbose read json /Users/jlawson/Projects/hubot-xmpp/node_modules/hubot/package.json
+10 verbose read json /Users/jlawson/Projects/hubot-xmpp/node_modules/mocha/package.json
+11 verbose read json /Users/jlawson/Projects/hubot-xmpp/node_modules/node-xmpp/package.json
+12 verbose from cache /Users/jlawson/Projects/hubot-xmpp/package.json
+13 verbose readDependencies using package.json deps
+14 verbose cache add [ 'node-stringprep', null ]
+15 silly cache add name=undefined spec="node-stringprep" args=["node-stringprep",null]
+16 verbose parsed url { pathname: 'node-stringprep',
+16 verbose parsed url   path: 'node-stringprep',
+16 verbose parsed url   href: 'node-stringprep' }
+17 silly lockFile d7e52d33-node-stringprep node-stringprep
+18 verbose lock node-stringprep /Users/jlawson/.npm/d7e52d33-node-stringprep.lock
+19 silly lockFile d7e52d33-node-stringprep node-stringprep
+20 verbose addNamed [ 'node-stringprep', '' ]
+21 verbose addNamed [ null, '' ]
+22 silly lockFile c469c25e-node-stringprep node-stringprep@
+23 verbose lock node-stringprep@ /Users/jlawson/.npm/c469c25e-node-stringprep.lock
+24 silly addNameRange { name: 'node-stringprep', range: '', hasData: false }
+25 verbose url raw node-stringprep
+26 verbose url resolving [ 'https://registry.npmjs.org/', './node-stringprep' ]
+27 verbose url resolved https://registry.npmjs.org/node-stringprep
+28 info retry registry request attempt 1 at 15:28:16
+29 verbose etag "DM6EDY9XOBW9V3D3K0F13U36U"
+30 http GET https://registry.npmjs.org/node-stringprep
+31 http 200 https://registry.npmjs.org/node-stringprep
+32 silly registry.get cb [ 200,
+32 silly registry.get   { vary: 'Accept',
+32 silly registry.get     server: 'CouchDB/1.2.0 (Erlang OTP/R15B)',
+32 silly registry.get     etag: '"5BRTM6RPTVTHVDLBJ9GLOO5OA"',
+32 silly registry.get     date: 'Tue, 10 Jul 2012 22:28:16 GMT',
+32 silly registry.get     'content-type': 'application/json',
+32 silly registry.get     'content-length': '9149' } ]
+33 silly addNameRange number 2 { name: 'node-stringprep', range: '', hasData: true }
+34 silly addNameRange versions [ 'node-stringprep',
+34 silly addNameRange   [ '0.0.2',
+34 silly addNameRange     '0.0.3',
+34 silly addNameRange     '0.0.4',
+34 silly addNameRange     '0.0.5',
+34 silly addNameRange     '0.1.0',
+34 silly addNameRange     '0.1.1',
+34 silly addNameRange     '0.1.2',
+34 silly addNameRange     '0.1.3',
+34 silly addNameRange     '0.1.4' ] ]
+35 verbose addNamed [ 'node-stringprep', '0.1.4' ]
+36 verbose addNamed [ '0.1.4', '0.1.4' ]
+37 silly lockFile e5510cac-node-stringprep-0-1-4 node-stringprep@0.1.4
+38 verbose lock node-stringprep@0.1.4 /Users/jlawson/.npm/e5510cac-node-stringprep-0-1-4.lock
+39 verbose read json /Users/jlawson/.npm/node-stringprep/0.1.4/package/package.json
+40 silly lockFile e5510cac-node-stringprep-0-1-4 node-stringprep@0.1.4
+41 silly lockFile c469c25e-node-stringprep node-stringprep@
+42 silly resolved [ { name: 'node-stringprep',
+42 silly resolved     version: '0.1.4',
+42 silly resolved     main: './build/default/node-stringprep',
+42 silly resolved     description: 'ICU StringPrep profiles',
+42 silly resolved     keywords: [ 'unicode', 'stringprep', 'icu' ],
+42 silly resolved     scripts: { install: 'sh ./install.sh' },
+42 silly resolved     dependencies: {},
+42 silly resolved     devDependencies: {},
+42 silly resolved     repository:
+42 silly resolved      { type: 'git',
+42 silly resolved        path: 'git://github.com/astro/node-stringprep.git' },
+42 silly resolved     homepage: 'http://github.com/astro/node-stringprep',
+42 silly resolved     bugs: 'http://github.com/astro/node-stringprep/issues',
+42 silly resolved     author:
+42 silly resolved      { name: 'Astro',
+42 silly resolved        email: 'astro@spaceboyz.net',
+42 silly resolved        url: 'http://spaceboyz.net/~astro/' },
+42 silly resolved     licenses: [ [Object] ],
+42 silly resolved     engines: { node: '>=0.4' },
+42 silly resolved     readme: '# node-stringprep #\n\n[Flattr this!](https://flattr.com/thing/44598/node-stringprep)\n\n## Purpose ##\n\nExposes predefined Unicode normalization functions that are required by many protocols. This is just a binding to [ICU](http://icu-project.org/), which is [said to be fast.](http://ayena.de/node/74)\n\n## Installation ##\n\n    # Debian\n    apt-get install libicu-dev\n\n    # Gentoo\n    emerge icu\n\n    # OSX using MacPorts\n    port install icu +devel\n\n    # OSX using Homebrew\n    brew install icu4c\n    ln -s /usr/local/Cellar/icu4c/<VERSION>/bin/icu-config /usr/local/bin/icu-config\n\n    npm install node-stringprep\n\n## Usage ##\n\n    var StringPrep = require(\'node-stringprep\').StringPrep;\n    var prep = new StringPrep(\'nameprep\');\n    prep.prepare(\'Äffchen\')  // => \'äffchen\'\n\nFor a list of supported profiles, see [node-stringprep.cc](http://github.com/astro/node-stringprep/blob/master/node-stringprep.cc#L160)\n',
+42 silly resolved     _id: 'node-stringprep@0.1.4',
+42 silly resolved     _from: 'node-stringprep' } ]
+43 info install node-stringprep@0.1.4 into /Users/jlawson/Projects/hubot-xmpp
+44 info installOne node-stringprep@0.1.4
+45 verbose from cache /Users/jlawson/.npm/node-stringprep/0.1.4/package/package.json
+46 info /Users/jlawson/Projects/hubot-xmpp/node_modules/node-stringprep unbuild
+47 verbose read json /Users/jlawson/Projects/hubot-xmpp/node_modules/node-stringprep/package.json
+48 verbose tar unpack /Users/jlawson/.npm/node-stringprep/0.1.4/package.tgz
+49 silly lockFile a6c5f8fa-mpp-node-modules-node-stringprep /Users/jlawson/Projects/hubot-xmpp/node_modules/node-stringprep
+50 verbose lock /Users/jlawson/Projects/hubot-xmpp/node_modules/node-stringprep /Users/jlawson/.npm/a6c5f8fa-mpp-node-modules-node-stringprep.lock
+51 silly gunzTarPerm modes [ '755', '644' ]
+52 silly gunzTarPerm extractEntry package.json
+53 silly gunzTarPerm extractEntry .npmignore
+54 silly gunzTarPerm extractEntry LICENSE
+55 silly gunzTarPerm extractEntry leakcheck.js
+56 silly gunzTarPerm extractEntry install.sh
+57 silly gunzTarPerm extractEntry node-stringprep.cc
+58 silly gunzTarPerm extractEntry README.markdown
+59 silly gunzTarPerm extractEntry wscript
+60 verbose read json /Users/jlawson/Projects/hubot-xmpp/node_modules/node-stringprep/package.json
+61 silly lockFile a6c5f8fa-mpp-node-modules-node-stringprep /Users/jlawson/Projects/hubot-xmpp/node_modules/node-stringprep
+62 info preinstall node-stringprep@0.1.4
+63 verbose from cache /Users/jlawson/Projects/hubot-xmpp/node_modules/node-stringprep/package.json
+64 verbose readDependencies using package.json deps
+65 verbose from cache /Users/jlawson/Projects/hubot-xmpp/node_modules/node-stringprep/package.json
+66 verbose readDependencies using package.json deps
+67 silly resolved []
+68 verbose about to build /Users/jlawson/Projects/hubot-xmpp/node_modules/node-stringprep
+69 info build /Users/jlawson/Projects/hubot-xmpp/node_modules/node-stringprep
+70 verbose from cache /Users/jlawson/Projects/hubot-xmpp/node_modules/node-stringprep/package.json
+71 verbose linkStuff [ false,
+71 verbose linkStuff   false,
+71 verbose linkStuff   false,
+71 verbose linkStuff   '/Users/jlawson/Projects/hubot-xmpp/node_modules' ]
+72 info linkStuff node-stringprep@0.1.4
+73 verbose linkBins node-stringprep@0.1.4
+74 verbose linkMans node-stringprep@0.1.4
+75 verbose rebuildBundles node-stringprep@0.1.4
+76 info install node-stringprep@0.1.4
+77 verbose unsafe-perm in lifecycle true
+78 silly exec sh "-c" "sh ./install.sh"
+79 silly sh,-c,sh ./install.sh,/Users/jlawson/Projects/hubot-xmpp/node_modules/node-stringprep spawning
+80 info node-stringprep@0.1.4 Failed to exec install script
+81 info /Users/jlawson/Projects/hubot-xmpp/node_modules/node-stringprep unbuild
+82 verbose from cache /Users/jlawson/Projects/hubot-xmpp/node_modules/node-stringprep/package.json
+83 info preuninstall node-stringprep@0.1.4
+84 info uninstall node-stringprep@0.1.4
+85 verbose true,/Users/jlawson/Projects/hubot-xmpp/node_modules,/Users/jlawson/Projects/hubot-xmpp/node_modules unbuild node-stringprep@0.1.4
+86 info postuninstall node-stringprep@0.1.4
+87 error node-stringprep@0.1.4 install: `sh ./install.sh`
+87 error `sh "-c" "sh ./install.sh"` failed with 1
+88 error Failed at the node-stringprep@0.1.4 install script.
+88 error This is most likely a problem with the node-stringprep package,
+88 error not with npm itself.
+88 error Tell the author that this fails on your system:
+88 error     sh ./install.sh
+88 error You can get their info via:
+88 error     npm owner ls node-stringprep
+88 error There is likely additional logging output above.
+89 error System Darwin 11.4.0
+90 error command "node" "/Users/jlawson/local/node/bin/npm" "install" "node-stringprep"
+91 error cwd /Users/jlawson/Projects/hubot-xmpp
+92 error node -v v0.6.5
+93 error npm -v 1.1.36
+94 error code ELIFECYCLE
+95 error message node-stringprep@0.1.4 install: `sh ./install.sh`
+95 error message `sh "-c" "sh ./install.sh"` failed with 1
+96 verbose exit [ 1, true ]

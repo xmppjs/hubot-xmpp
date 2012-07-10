@@ -1,4 +1,4 @@
-{Adapter,Robot} = require 'hubot'
+{Adapter,Robot,TextMessage,EnterMessage,LeaveMessage} = require 'hubot'
 
 Xmpp    = require 'node-xmpp'
 util    = require 'util'
@@ -97,7 +97,7 @@ class XmppBot extends Adapter
     user.type = stanza.attrs.type
     user.room = room
 
-    @receive new Robot.TextMessage user, message
+    @receive new TextMessage(user, message)
 
   readPresence: (stanza) =>
     jid = new Xmpp.JID(stanza.attrs.from)
@@ -160,7 +160,7 @@ class XmppBot extends Adapter
         @robot.logger.debug "Availability received for #{from}"
 
         user = @userForId from, room: room, jid: jid.toString()
-        @receive new Robot.EnterMessage user
+        @receive new EnterMessage user
 
       when 'unavailable'
         from = getFrom(stanza)
@@ -176,7 +176,7 @@ class XmppBot extends Adapter
         @robot.logger.debug "Unavailability received for #{from}"
 
         user = @userForId from, room: room, jid: jid.toString()
-        @receive new Robot.LeaveMessage(user)
+        @receive new LeaveMessage(user)
 
   # Checks that the room parameter is a room the bot is in.
   messageFromRoom: (room) ->
