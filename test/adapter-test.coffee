@@ -33,6 +33,8 @@ describe 'XmppBot', ->
       userForId: ->
         user =
           id: 1
+      logger:
+        debug: () ->
 
     # start with a valid message
     beforeEach ->
