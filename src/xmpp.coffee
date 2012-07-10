@@ -1,5 +1,5 @@
-Robot   = require('hubot').robot()
-Adapter = require('hubot').adapter()
+{Adapter,Robot} = require 'hubot'
+
 Xmpp    = require 'node-xmpp'
 util    = require 'util'
 
