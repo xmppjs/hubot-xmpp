@@ -43,7 +43,7 @@ describe 'XmppBot', ->
           type: 'chat'
           from: 'test@example.com/ernie'
         getChild: ->
-          body = 
+          body =
             getText: ->
               'message text'
 
