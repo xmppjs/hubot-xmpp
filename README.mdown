@@ -2,6 +2,8 @@
 
 Connects Hubot to your XMPP network 
 
+[![Build Status](https://secure.travis-ci.org/markstory/hubot-xmpp.png?branch=master)](http://travis-ci.org/markstory/hubot-xmpp)
+
 ### Setup
 
 Install dependencies with `npm`
