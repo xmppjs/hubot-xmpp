@@ -1,6 +1,7 @@
 Bot = require '../src/xmpp'
-Hubot = require 'hubot'
-Robot = Hubot.robot()
+
+{Adapter,Robot,EnterMessage,LeaveMessage} = require 'hubot'
+
 assert = require 'assert'
 
 describe 'XmppBot', ->
@@ -249,7 +250,7 @@ describe 'XmppBot', ->
       bot.heardOwnPresence = true
 
       bot.receive = (msg) ->
-        assert.ok msg instanceof Robot.EnterMessage
+        assert.ok msg instanceof EnterMessage
         assert.equal msg.user.room, 'test@example.com'
 
       bot.userForId = (id, user) ->
@@ -266,7 +267,7 @@ describe 'XmppBot', ->
 
     it 'should call @receive when someone leaves', () ->
       bot.receive = (msg) ->
-        assert.ok msg instanceof Robot.LeaveMessage
+        assert.ok msg instanceof LeaveMessage
         assert.equal msg.user.room, 'test@example.com'
 
       bot.userForId = (id, user) ->
