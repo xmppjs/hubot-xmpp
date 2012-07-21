@@ -27,3 +27,12 @@ Optional:
 your rooms require passwords you should use the `jid:password` syntax.
 Room passwords cannot contain `,`.
 
+### Installation
+
+After installing `hubot` with npm, you should create a standalone bot:
+
+	hubot -c ./my-bot
+
+After creating your new bot, you should modify the `package.json` and add the
+`hubot-xmpp` dependency. After running `npm install` you should be ready to configure
+and start up your bot.
