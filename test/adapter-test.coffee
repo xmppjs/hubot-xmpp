@@ -120,7 +120,7 @@ describe 'XmppBot', ->
 
   describe '#read()', ->
     bot = Bot.use()
-    bot.robot = 
+    bot.robot =
       logger:
         error: ->
 
@@ -303,7 +303,6 @@ describe 'XmppBot', ->
       bot.client.send = (msg) ->
         assert.equal msg.parent.attrs.to, 'test@example.com'
         assert.equal msg.parent.attrs.type, 'groupchat'
-        assert.equal msg.parent.attrs.from, bot.options.username
         assert.equal msg.getText(), 'testing'
         done()
 
@@ -318,7 +317,6 @@ describe 'XmppBot', ->
       bot.client.send = (msg) ->
         assert.equal msg.parent.attrs.to, 'test@example.com/mark'
         assert.equal msg.parent.attrs.type, 'direct'
-        assert.equal msg.parent.attrs.from, bot.options.username
         assert.equal msg.getText(), 'testing'
         done()
 
@@ -333,12 +331,7 @@ describe 'XmppBot', ->
       bot.client.send = (msg) ->
         assert.equal msg.parent.attrs.to, 'test@example.com'
         assert.equal msg.parent.attrs.type, 'groupchat'
-        assert.equal msg.parent.attrs.from, bot.options.username
         assert.equal msg.getText(), 'testing'
         done()
 
       bot.send user, 'testing'
-
-
-
-
