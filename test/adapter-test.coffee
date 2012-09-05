@@ -44,7 +44,7 @@ describe 'XmppBot', ->
         assert.equal message.attrs.xmlns, 'http://jabber.org/protocol/muc'
         assert.ok message.parent
         assert.equal message.parent.name, 'presence'
-        assert.equal message.parent.attrs.to, "test@example.com/#{bot.robot.name}"
+        assert.equal message.parent.attrs.to, "#{room.jid}/#{bot.robot.name}"
         assert.equal message.children.length, 1
         assert.equal message.children[0].name, 'history'
         assert.equal message.children[0].attrs.seconds, 1
@@ -91,7 +91,7 @@ describe 'XmppBot', ->
 
     it 'should call @client.send() with the room and bot name', (done) ->
       bot.client.send = (message) ->    
-        assert.equal message.attrs.to, "test@example.com/#{bot.robot.name}"
+        assert.equal message.attrs.to, "#{room.jid}/#{bot.robot.name}"
         done()
       bot.leaveRoom room
 
