@@ -38,20 +38,8 @@ class XmppBot extends Adapter
     @client.send new Xmpp.Element('presence')
     @robot.logger.info 'Hubot XMPP sent initial presence'
 
-    # join each room
-    # http://xmpp.org/extensions/xep-0045.html for XMPP chat standard
-    for room in @options.rooms
-      @client.send do =>
-        @robot.logger.debug "Joining #{room.jid}/#{@robot.name}"
-
-        el = new Xmpp.Element('presence', to: "#{room.jid}/#{@robot.name}" )
-        x = el.c('x', xmlns: 'http://jabber.org/protocol/muc' )
-        x.c('history', seconds: 1 ) # prevent the server from confusing us with old messages
-                                    # and it seems that servers don't reliably support maxchars
-                                    # or zero values
-        if (room.password) then x.c('password').t(room.password)
-        return x
-
+    @.joinRoom room for room in @options.rooms
+      
     # send raw whitespace for keepalive
     setInterval =>
       @client.send ' '
@@ -59,6 +47,25 @@ class XmppBot extends Adapter
 
     @emit 'connected'
 
+  # XMPP Joining a room - http://xmpp.org/extensions/xep-0045.html#enter-muc
+  joinRoom: (room) ->
+    @client.send do =>
+      @robot.logger.debug "Joining #{room.jid}/#{@robot.name}"
+
+      el = new Xmpp.Element('presence', to: "#{room.jid}/#{@robot.name}" )
+      x = el.c('x', xmlns: 'http://jabber.org/protocol/muc' )
+      x.c('history', seconds: 1 ) # prevent the server from confusing us with old messages
+                                  # and it seems that servers don't reliably support maxchars
+                                  # or zero values
+      if (room.password) then x.c('password').t(room.password)
+      return x
+  # XMPP Leaving a room - http://xmpp.org/extensions/xep-0045.html#exit
+  leaveRoom: (room) ->
+    @client.send do =>
+      @robot.logger.debug "Leaving #{room.jid}/#{@robot.name}"
+
+      return new Xmpp.Element('presence', to: "#{room.jid}/#{@robot.name}", type: 'unavailable' )
+    
   parseRooms: (items) ->
     rooms = []
     for room in items
