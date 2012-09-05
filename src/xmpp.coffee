@@ -38,7 +38,7 @@ class XmppBot extends Adapter
     @client.send new Xmpp.Element('presence')
     @robot.logger.info 'Hubot XMPP sent initial presence'
 
-    @.joinRoom room for room in @options.rooms
+    @joinRoom room for room in @options.rooms
       
     # send raw whitespace for keepalive
     setInterval =>
