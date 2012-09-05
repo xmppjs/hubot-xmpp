@@ -45,6 +45,7 @@ describe 'XmppBot', ->
         assert.ok message.parent
         assert.equal message.parent.name, 'presence'
         assert.equal message.parent.attrs.to, "#{room.jid}/#{bot.robot.name}"
+        assert.equal message.parent.attrs.type, undefined
         assert.equal message.children.length, 1
         assert.equal message.children[0].name, 'history'
         assert.equal message.children[0].attrs.seconds, 1
