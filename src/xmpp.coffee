@@ -47,6 +47,15 @@ class XmppBot extends Adapter
 
     @emit 'connected'
 
+  parseRooms: (items) ->
+    rooms = []
+    for room in items
+      index = room.indexOf(':')
+      rooms.push
+        jid:      room.slice(0, if index > 0 then index else room.length)
+        password: if index > 0 then room.slice(index+1) else false
+    return rooms
+
   # XMPP Joining a room - http://xmpp.org/extensions/xep-0045.html#enter-muc
   joinRoom: (room) ->
     @client.send do =>
@@ -59,21 +68,13 @@ class XmppBot extends Adapter
                                   # or zero values
       if (room.password) then x.c('password').t(room.password)
       return x
+
   # XMPP Leaving a room - http://xmpp.org/extensions/xep-0045.html#exit
   leaveRoom: (room) ->
     @client.send do =>
       @robot.logger.debug "Leaving #{room.jid}/#{@robot.name}"
 
       return new Xmpp.Element('presence', to: "#{room.jid}/#{@robot.name}", type: 'unavailable' )
-    
-  parseRooms: (items) ->
-    rooms = []
-    for room in items
-      index = room.indexOf(':')
-      rooms.push
-        jid:      room.slice(0, if index > 0 then index else room.length)
-        password: if index > 0 then room.slice(index+1) else false
-    return rooms
 
   read: (stanza) =>
     if stanza.attrs.type is 'error'

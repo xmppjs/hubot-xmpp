@@ -18,6 +18,88 @@ describe 'XmppBot', ->
 
       assert.equal result[1].jid, 'room'
       assert.equal result[1].password, ''
+  
+  describe '#joinRoom()', ->
+    bot = Bot.use()
+    
+    bot.client =
+      stub: 'xmpp client'
+
+    bot.robot =
+      name: 'bot'
+      logger:
+        debug: () ->
+    room = 
+      jid: 'test@example.com'
+      password: false
+    
+    it 'should call @client.send()', (done) ->
+      bot.client.send = (message) ->
+        done()
+      bot.joinRoom room
+    
+    it 'should call @client.send() with the appropriate protocol message', (done) ->
+      bot.client.send = (message) -> 
+        assert.equal message.name, 'x'
+        assert.equal message.attrs.xmlns, 'http://jabber.org/protocol/muc'
+        assert.ok message.parent
+        assert.equal message.parent.name, 'presence'
+        assert.equal message.parent.attrs.to, "test@example.com/#{bot.robot.name}"
+        assert.equal message.children.length, 1
+        assert.equal message.children[0].name, 'history'
+        assert.equal message.children[0].attrs.seconds, 1
+        done()
+      bot.joinRoom room
+
+    describe 'and the room requires a password', ->
+      protectedRoom = 
+        jid: 'test@example.com'
+        password: 'password'
+      
+      it 'should call @client.send() with the password', (done) ->
+        bot.client.send = (message) ->  
+          assert.equal message.name, 'x'
+          assert.equal message.children.length, 2
+          assert.equal message.children[1].name, 'password'
+          assert.equal message.children[1].children[0], protectedRoom.password
+          done()  
+        bot.joinRoom protectedRoom
+
+  describe '#leaveRoom()', ->
+    bot = Bot.use()
+    
+    bot.client =
+      stub: 'xmpp client'
+    bot.robot =
+      name: 'bot'
+      logger:
+        debug: () ->
+    room = 
+      jid: 'test@example.com'
+      password: false
+
+    it 'should call @client.send()', (done) ->
+      bot.client.send = (message) ->
+        done()
+      bot.leaveRoom room
+    
+    it 'should call @client.send() with a presence element', (done) ->
+      bot.client.send = (message) ->
+        assert.equal message.name, 'presence'
+        done()
+      bot.leaveRoom room
+
+    it 'should call @client.send() with the room and bot name', (done) ->
+      bot.client.send = (message) ->    
+        assert.equal message.attrs.to, "test@example.com/#{bot.robot.name}"
+        done()
+      bot.leaveRoom room
+
+    it 'should call @client.send() with type unavailable', (done) ->
+      bot.client.send = (message) ->    
+        assert.equal message.attrs.type, 'unavailable'
+        done()
+      bot.leaveRoom room
 
   describe '#readMessage()', ->
     stanza = ''
