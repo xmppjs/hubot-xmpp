@@ -22,8 +22,12 @@ and port) environment variables to be set to able to use it.
 
 Optional:
 
-* `HUBOT_XMPP_HOST`
-* `HUBOT_XMPP_PORT`
+* `HUBOT_XMPP_HOST` The host name you want to connect to if its different than
+  what is in the username jid.
+* `HUBOT_XMPP_PORT` The port to connect to on the jabber server.
+* `HUBOT_XMPP_LEGACY_SSL` Set to 1 to enable legacy SSL port.  This requires
+  the host to be defined.
+* `HUBOT_XMPP_PREFERRED_SASL_MECHANISM` Used to change the encoding used for SASL.
 
 `HUBOT_XMPP_ROOMS` can be a comma separated list of rooms to join.  If
 your rooms require passwords you should use the `jid:password` syntax.

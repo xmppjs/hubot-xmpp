@@ -13,6 +13,7 @@ class XmppBot extends Adapter
       rooms:    @parseRooms process.env.HUBOT_XMPP_ROOMS.split(',')
       keepaliveInterval: 30000 # ms interval to send whitespace to xmpp server
       legacySSL: process.env.HUBOT_XMPP_LEGACYSSL
+      preferredSaslMechanism: process.env.HUBOT_XMPP_PREFERRED_SASL_MECHANISM
 
     @robot.logger.info util.inspect(options)
 
@@ -22,6 +23,7 @@ class XmppBot extends Adapter
       host: options.host
       port: options.port
       legacySSL: options.legacySSL
+      preferredSaslMechanism: options.preferredSaslMechanism
 
     @client.on 'error', @.error
     @client.on 'online', @.online
