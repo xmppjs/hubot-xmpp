@@ -25,7 +25,7 @@ Optional:
 * `HUBOT_XMPP_HOST` The host name you want to connect to if its different than
   what is in the username jid.
 * `HUBOT_XMPP_PORT` The port to connect to on the jabber server.
-* `HUBOT_XMPP_LEGACY_SSL` Set to 1 to enable legacy SSL port.  This requires
+* `HUBOT_XMPP_LEGACYSSL` Set to 1 to enable legacy SSL port.  This requires
   the host to be defined.
 * `HUBOT_XMPP_PREFERRED_SASL_MECHANISM` Used to change the encoding used for SASL.
 
