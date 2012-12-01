@@ -207,7 +207,7 @@ class XmppBot extends Adapter
         type: user.type or 'groupchat'
 
       if msg.attrs? # Xmpp.Element type
-        message = msg
+        message = msg.root()
         message.attrs.to ?= params.to
         message.attrs.type ?= params.type
       else
