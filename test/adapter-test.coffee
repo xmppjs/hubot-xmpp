@@ -426,11 +426,6 @@ describe 'XmppBot', ->
         room: 'test@example.com'
         type: 'groupchat'
 
-      #params =
-        #  to: user.room
-        #  type: user.type
-
-      #el = new Xmpp.Element('message', params).c('body')
       el = new Xmpp.Element('message').c('body')
         .t('testing')
 
