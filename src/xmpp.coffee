@@ -216,9 +216,12 @@ class XmppBot extends Adapter
 
       @client.send message
 
-  reply: (user, strings...) ->
-    for str in strings
-      @send user, "#{user.name}: #{str}"
+  reply: (user, messages...) ->
+    for msg in messages
+      if msg.attrs? #Xmpp.Element
+        @send user, msg
+      else
+        @send user, "#{user.name}: #{msg}"
 
   topic: (user, strings...) ->
     string = strings.join "\n"
