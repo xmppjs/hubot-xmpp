@@ -41,7 +41,7 @@ class XmppBot extends Adapter
     @robot.logger.info 'Hubot XMPP sent initial presence'
 
     @joinRoom room for room in @options.rooms
-      
+
     # send raw whitespace for keepalive
     setInterval =>
       @client.send ' '
@@ -88,6 +88,24 @@ class XmppBot extends Adapter
         @readMessage stanza
       when 'presence'
         @readPresence stanza
+      when 'iq'
+        @readIq stanza
+
+  readIq: (stanza) =>
+    @robot.logger.debug "[received iq] #{stanza}"
+
+    # Some servers use iq pings to make sure the client is still functional.  We need
+    # to reply or we'll get kicked out of rooms we've joined.
+    if (stanza.attrs.type == 'get' && stanza.children[0].name == 'ping')
+      pong = new Xmpp.Element('iq',
+        to: stanza.attrs.from
+        from: stanza.attrs.to
+        type: 'result'
+        id: stanza.attrs.id
+      )
+
+      @robot.logger.debug "[sending pong] #{pong}"
+      @client.send pong
 
   readMessage: (stanza) =>
     # ignore non-messages
