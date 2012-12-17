@@ -18,10 +18,10 @@ describe 'XmppBot', ->
 
       assert.equal result[1].jid, 'room'
       assert.equal result[1].password, ''
-  
+
   describe '#joinRoom()', ->
     bot = Bot.use()
-    
+
     bot.client =
       stub: 'xmpp client'
 
@@ -29,17 +29,17 @@ describe 'XmppBot', ->
       name: 'bot'
       logger:
         debug: () ->
-    room = 
+    room =
       jid: 'test@example.com'
       password: false
-    
+
     it 'should call @client.send()', (done) ->
       bot.client.send = (message) ->
         done()
       bot.joinRoom room
-    
+
     it 'should call @client.send() with the appropriate protocol message', (done) ->
-      bot.client.send = (message) -> 
+      bot.client.send = (message) ->
         assert.equal message.name, 'x'
         assert.equal message.attrs.xmlns, 'http://jabber.org/protocol/muc'
         assert.ok message.parent
@@ -53,29 +53,29 @@ describe 'XmppBot', ->
       bot.joinRoom room
 
     describe 'and the room requires a password', ->
-      protectedRoom = 
+      protectedRoom =
         jid: 'test@example.com'
         password: 'password'
-      
+
       it 'should call @client.send() with the password', (done) ->
-        bot.client.send = (message) ->  
+        bot.client.send = (message) ->
           assert.equal message.name, 'x'
           assert.equal message.children.length, 2
           assert.equal message.children[1].name, 'password'
           assert.equal message.children[1].children[0], protectedRoom.password
-          done()  
+          done()
         bot.joinRoom protectedRoom
 
   describe '#leaveRoom()', ->
     bot = Bot.use()
-    
+
     bot.client =
       stub: 'xmpp client'
     bot.robot =
       name: 'bot'
       logger:
         debug: () ->
-    room = 
+    room =
       jid: 'test@example.com'
       password: false
 
@@ -83,7 +83,7 @@ describe 'XmppBot', ->
       bot.client.send = (message) ->
         done()
       bot.leaveRoom room
-    
+
     it 'should call @client.send() with a presence element', (done) ->
       bot.client.send = (message) ->
         assert.equal message.name, 'presence'
@@ -91,16 +91,55 @@ describe 'XmppBot', ->
       bot.leaveRoom room
 
     it 'should call @client.send() with the room and bot name', (done) ->
-      bot.client.send = (message) ->    
+      bot.client.send = (message) ->
         assert.equal message.attrs.to, "#{room.jid}/#{bot.robot.name}"
         done()
       bot.leaveRoom room
 
     it 'should call @client.send() with type unavailable', (done) ->
-      bot.client.send = (message) ->    
+      bot.client.send = (message) ->
         assert.equal message.attrs.type, 'unavailable'
         done()
       bot.leaveRoom room
+
+  describe '#readIq', ->
+    stanza = ''
+    bot = Bot.use()
+    bot.client =
+      stub: 'xmpp client'
+    bot.client.send = ->
+      throw new Error "shouldn't have called send."
+
+    bot.robot =
+      name: 'bot'
+      userForId: ->
+        user =
+          id: 1
+      logger:
+        debug: () ->
+
+    beforeEach ->
+      stanza =
+        attrs:
+          type: 'get'
+          from: 'test@example.com/ernie'
+          to:   'user@example.com/element84'
+          id:   '1234'
+        children: [ { name: 'query' }]
+
+    it 'should ignore non-ping iqs', ->
+      assert.strictEqual bot.readIq(stanza), undefined
+
+    it 'should reply to ping iqs with a pong result', (done) ->
+      stanza.children = [ { name: 'ping' } ]
+      bot.client.send = (pong) ->
+        assert.equal pong.name, 'iq'
+        assert.equal pong.attrs.to, stanza.attrs.from
+        assert.equal pong.attrs.from, stanza.attrs.to
+        assert.equal pong.attrs.id, stanza.attrs.id
+        assert.equal pong.attrs.type, 'result'
+        done()
+      bot.readIq stanza
 
   describe '#readMessage()', ->
     stanza = ''
