@@ -216,22 +216,30 @@ class XmppBot extends Adapter
       return true if joined.jid == room
     return false
 
-  send: (user, strings...) ->
-    for str in strings
-      @robot.logger.debug "Sending to #{user.room}: #{str}"
+  send: (user, messages...) ->
+    for msg in messages
+      @robot.logger.debug "Sending to #{user.room}: #{msg}"
 
       params =
         to: if user.type in ['direct', 'chat'] then "#{user.room}/#{user.id}" else user.room
         type: user.type or 'groupchat'
 
-      message = new Xmpp.Element('message', params).
-                c('body').t(str)
+      if msg.attrs? # Xmpp.Element type
+        message = msg.root()
+        message.attrs.to ?= params.to
+        message.attrs.type ?= params.type
+      else
+        message = new Xmpp.Element('message', params).
+                  c('body').t(msg)
 
       @client.send message
 
-  reply: (user, strings...) ->
-    for str in strings
-      @send user, "#{user.name}: #{str}"
+  reply: (user, messages...) ->
+    for msg in messages
+      if msg.attrs? #Xmpp.Element
+        @send user, msg
+      else
+        @send user, "#{user.name}: #{msg}"
 
   topic: (user, strings...) ->
     string = strings.join "\n"

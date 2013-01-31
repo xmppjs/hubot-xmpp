@@ -1,4 +1,5 @@
 Bot = require '../src/xmpp'
+Xmpp = require 'node-xmpp'
 
 {Adapter,Robot,EnterMessage,LeaveMessage} = require 'hubot'
 
@@ -457,3 +458,20 @@ describe 'XmppBot', ->
         done()
 
       bot.send user, 'testing'
+
+    it 'should accept Xmpp.Element objects as messages', (done) ->
+      user =
+        id: 'mark'
+        room: 'test@example.com'
+        type: 'groupchat'
+
+      el = new Xmpp.Element('message').c('body')
+        .t('testing')
+
+      bot.client.send = (msg) ->
+        assert.equal msg.root().attrs.to, 'test@example.com'
+        assert.equal msg.root().attrs.type, 'groupchat'
+        assert.equal msg.root().getText(), el.root().getText()
+        done()
+
+      bot.send user, el
