@@ -154,9 +154,10 @@ describe 'XmppBot', ->
 
     bot.robot =
       name: 'bot'
-      userForId: ->
-        user =
-          id: 1
+      brain:
+        userForId: ->
+          user =
+            id: 1
       logger:
         debug: () ->
 
