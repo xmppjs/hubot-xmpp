@@ -203,43 +203,45 @@ describe 'XmppBot', ->
 
   describe '#reply()', ->
     bot = Bot.use()
-    user =
-      name: 'mark'
+    envelope =
+      user:
+        name: 'mark'
 
     it 'should call send()', (done) ->
-      bot.send = (user, message) ->
+      bot.send = (envelope, message) ->
         assert.equal message, 'mark: one'
         done()
-      bot.reply user, 'one'
+      bot.reply envelope, 'one'
 
     it 'should call send() multiple times', (done) ->
       called = 0
-      bot.send = (user, message) ->
+      bot.send = (envelope, message) ->
         called += 1
         done() if called == 2
-      bot.reply user, 'one', 'two'
+      bot.reply envelope, 'one', 'two'
 
   describe '#topic()', ->
     bot = Bot.use()
     bot.client =
       stub: 'xmpp client'
 
-    user =
-      name: 'mark'
+    envelope =
+      user:
+        name: 'mark'
       room: 'test@example.com'
 
     it 'should call @client.send()', (done) ->
       bot.client.send = (message) ->
-        assert.equal message.parent.attrs.to, user.room
+        assert.equal message.parent.attrs.to, envelope.room
         assert.equal 'test', message.children[0]
         done()
-      bot.topic user, 'test'
+      bot.topic envelope, 'test'
 
     it 'should call @client.send() with newlines', (done) ->
       bot.client.send = (message) ->
         assert.equal "one\ntwo", message.children[0]
         done()
-      bot.topic user, 'one', 'two'
+      bot.topic envelope, 'one', 'two'
 
   describe '#read()', ->
     bot = Bot.use()
@@ -419,8 +421,9 @@ describe 'XmppBot', ->
         debug: ->
 
     it 'should use type groupchat if type is undefined', (done) ->
-      user =
-        id: 'mark'
+      envelope =
+        user:
+          id: 'mark'
         room: 'test@example.com'
 
       bot.client.send = (msg) ->
@@ -429,13 +432,14 @@ describe 'XmppBot', ->
         assert.equal msg.getText(), 'testing'
         done()
 
-      bot.send user, 'testing'
+      bot.send envelope, 'testing'
 
     it 'should send messages directly', (done) ->
-      user =
-        id: 'mark'
+      envelope =
+        user:
+          id: 'mark'
+          type: 'direct'
         room: 'test@example.com'
-        type: 'direct'
 
       bot.client.send = (msg) ->
         assert.equal msg.parent.attrs.to, 'test@example.com/mark'
@@ -443,13 +447,14 @@ describe 'XmppBot', ->
         assert.equal msg.getText(), 'testing'
         done()
 
-      bot.send user, 'testing'
+      bot.send envelope, 'testing'
 
     it 'should send messages to the room', (done) ->
-      user =
-        id: 'mark'
+      envelope =
+        user:
+          id: 'mark'
+          type: 'groupchat'
         room: 'test@example.com'
-        type: 'groupchat'
 
       bot.client.send = (msg) ->
         assert.equal msg.parent.attrs.to, 'test@example.com'
@@ -457,13 +462,14 @@ describe 'XmppBot', ->
         assert.equal msg.getText(), 'testing'
         done()
 
-      bot.send user, 'testing'
+      bot.send envelope, 'testing'
 
     it 'should accept Xmpp.Element objects as messages', (done) ->
-      user =
-        id: 'mark'
+      envelope =
+        user:
+          id: 'mark'
+          type: 'groupchat'
         room: 'test@example.com'
-        type: 'groupchat'
 
       el = new Xmpp.Element('message').c('body')
         .t('testing')
@@ -474,4 +480,4 @@ describe 'XmppBot', ->
         assert.equal msg.root().getText(), el.root().getText()
         done()
 
-      bot.send user, el
+      bot.send envelope, el
