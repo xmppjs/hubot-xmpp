@@ -237,9 +237,9 @@ class XmppBot extends Adapter
   reply: (envelope, messages...) ->
     for msg in messages
       if msg.attrs? #Xmpp.Element
-        @send envelope.user, msg
+        @send envelope, msg
       else
-        @send envelope.user, "#{envelope.user.name}: #{msg}"
+        @send envelope, "#{envelope.user.name}: #{msg}"
 
   topic: (envelope, strings...) ->
     string = strings.join "\n"
