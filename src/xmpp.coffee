@@ -32,7 +32,19 @@ class XmppBot extends Adapter
     @options = options
 
   error: (error) =>
-    @robot.logger.error error.toString()
+    if error.code == "ECONNREFUSED"
+      @robot.logger.error "Connection refused, exiting"
+      setTimeout () ->
+        process.exit(1)
+      , 5000
+    else if error.children?[0]?.name == "system-shutdown"
+      @robot.logger.error "Server shutdown detected, restarting.."
+      setTimeout () ->
+        process.exit(1)
+      , 5000
+    else
+      @robot.logger.error error.toString()
+      console.log util.inspect(error.children?[0]?.name, { showHidden: true, depth: 1 })
 
   online: =>
     @robot.logger.info 'Hubot XMPP client online'
