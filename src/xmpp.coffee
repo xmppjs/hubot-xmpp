@@ -233,8 +233,8 @@ class XmppBot extends Adapter
       @robot.logger.debug "Sending to #{envelope.room}: #{msg}"
 
       params =
-        to: if envelope.user.type in ['direct', 'chat'] then "#{envelope.room}/#{envelope.user.id}" else envelope.room
-        type: envelope.user.type or 'groupchat'
+        to: if envelope.user?.type in ['direct', 'chat'] then "#{envelope.room}/#{envelope.user.id}" else envelope.room
+        type: envelope.user?.type or 'groupchat'
 
       if msg.attrs? # Xmpp.Element type
         message = msg.root()
