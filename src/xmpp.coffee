@@ -32,7 +32,19 @@ class XmppBot extends Adapter
     @options = options
 
   error: (error) =>
-    @robot.logger.error error.toString()
+    if error.code == "ECONNREFUSED"
+      @robot.logger.error "Connection refused, exiting"
+      setTimeout () ->
+        process.exit(1)
+      , 5000
+    else if error.children?[0]?.name == "system-shutdown"
+      @robot.logger.error "Server shutdown detected, restarting.."
+      setTimeout () ->
+        process.exit(1)
+      , 5000
+    else
+      @robot.logger.error error.toString()
+      console.log util.inspect(error.children?[0]?.name, { showHidden: true, depth: 1 })
 
   online: =>
     @robot.logger.info 'Hubot XMPP client online'
@@ -221,8 +233,8 @@ class XmppBot extends Adapter
       @robot.logger.debug "Sending to #{envelope.room}: #{msg}"
 
       params =
-        to: if envelope.user.type in ['direct', 'chat'] then "#{envelope.room}/#{envelope.user.id}" else envelope.room
-        type: envelope.user.type or 'groupchat'
+        to: if envelope.user?.type in ['direct', 'chat'] then "#{envelope.room}/#{envelope.user.id}" else envelope.room
+        type: envelope.user?.type or 'groupchat'
 
       if msg.attrs? # Xmpp.Element type
         message = msg.root()
