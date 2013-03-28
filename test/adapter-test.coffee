@@ -244,6 +244,37 @@ describe 'XmppBot', ->
         done()
       bot.topic envelope, 'one', 'two'
 
+  describe '#error()', ->
+    restoreExit = null
+
+    bot = Bot.use()
+    bot.robot =
+      logger:
+        error: ->
+
+    before () ->
+      restoreExit = process.exit
+      process.exit = () ->
+
+    after () ->
+      process.exit = restoreExit
+
+    it 'should handle ECONNREFUSED', (done) ->
+      process.exit = ->
+        assert.ok 'exit was called'
+        done()
+      error =
+        code: 'ECONNREFUSED'
+      bot.error error
+
+    it 'should handle system-shutdown', (done) ->
+      process.exit = ->
+        assert.ok 'exit was called'
+        done()
+      error =
+        children: [ {name: 'system-shutdown'} ]
+      bot.error error
+
   describe '#read()', ->
     bot = Bot.use()
     bot.robot =
@@ -261,7 +292,7 @@ describe 'XmppBot', ->
           type: 'error'
         toString: ->
           'fail'
-      bot.read(stanza)
+      bot.read stanza
 
     it 'should delegate to readMessage', (done) ->
       stanza =

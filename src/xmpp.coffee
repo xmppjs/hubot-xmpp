@@ -36,12 +36,12 @@ class XmppBot extends Adapter
       @robot.logger.error "Connection refused, exiting"
       setTimeout () ->
         process.exit(1)
-      , 5000
+      , 1500
     else if error.children?[0]?.name == "system-shutdown"
-      @robot.logger.error "Server shutdown detected, restarting.."
+      @robot.logger.error "Server shutdown detected, exiting"
       setTimeout () ->
         process.exit(1)
-      , 5000
+      , 1500
     else
       @robot.logger.error error.toString()
       console.log util.inspect(error.children?[0]?.name, { showHidden: true, depth: 1 })
