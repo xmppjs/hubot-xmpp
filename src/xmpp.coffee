@@ -18,6 +18,7 @@ class XmppBot extends Adapter
     @robot.logger.info util.inspect(options)
 
     @client = new Xmpp.Client
+      reconnect: true
       jid: options.username
       password: options.password
       host: options.host
@@ -28,6 +29,7 @@ class XmppBot extends Adapter
     @client.on 'error', @.error
     @client.on 'online', @.online
     @client.on 'stanza', @.read
+    @client.on 'offline', @.offline
 
     @options = options
 
@@ -55,11 +57,15 @@ class XmppBot extends Adapter
     @joinRoom room for room in @options.rooms
 
     # send raw whitespace for keepalive
-    setInterval =>
+    @keepaliveInterval = setInterval =>
       @client.send ' '
     , @options.keepaliveInterval
 
-    @emit 'connected'
+    if @connected
+      @emit 'reconnected'
+    else
+      @emit 'connected'
+    @connected = true
 
   parseRooms: (items) ->
     rooms = []
@@ -263,6 +269,10 @@ class XmppBot extends Adapter
               c('subject').t(string)
 
     @client.send message
+
+  offline: =>
+    @robot.logger.debug "Received offline event"
+    clearInterval(@keepaliveInterval)
 
 exports.use = (robot) ->
   new XmppBot robot
