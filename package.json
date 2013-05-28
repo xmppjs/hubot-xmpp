@@ -1,6 +1,6 @@
 {
   "name": "hubot-xmpp",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "author": "Mark Story <mark@mark-story.com> (http://mark-story.com)",
   "description": "XMPP adapter for Hubot.",
   "keywords": ["hubot", "xmpp", "adapter"],
