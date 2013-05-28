@@ -33,6 +33,7 @@ class XmppBot extends Adapter
     @client.on 'offline', @.offline
 
     @options = options
+    @connected = false
 
   error: (error) =>
     if error.code == "ECONNREFUSED"
@@ -62,10 +63,7 @@ class XmppBot extends Adapter
       @client.send ' '
     , @options.keepaliveInterval
 
-    if @connected
-      @emit 'reconnected'
-    else
-      @emit 'connected'
+    @emit if @connected then 'reconnected' else 'connected'
     @connected = true
 
   parseRooms: (items) ->
