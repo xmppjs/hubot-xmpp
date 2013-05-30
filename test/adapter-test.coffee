@@ -160,6 +160,7 @@ describe 'XmppBot', ->
             id: 1
       logger:
         debug: () ->
+        warning: () ->
 
     # start with a valid message
     beforeEach ->
