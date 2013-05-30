@@ -529,8 +529,8 @@ describe 'XmppBot', ->
       bot.robot =
         name: 'bot'
         logger:
-          debug: ->
-          info: ->
+          debug: () ->
+          info: () ->
 
     it 'should emit connected event', (done) ->
       callCount = 0
@@ -549,7 +549,7 @@ describe 'XmppBot', ->
       ]
 
       bot.client.send = (msg) ->
-        expected[callCount](msg)
+        expected[callCount](msg) if expected[callCount]
         callCount++
 
       bot.online()
