@@ -140,7 +140,7 @@ class XmppBot extends Adapter
     return if from == @robot.name or from == @options.username or from is undefined
 
     # note that 'from' isn't a full JID, just the local user part
-    user = @userForId from
+    user = @robot.brain.userForId from
     user.type = stanza.attrs.type
     user.room = room
 
@@ -208,7 +208,7 @@ class XmppBot extends Adapter
 
         @robot.logger.debug "Availability received for #{from}"
 
-        user = @userForId from, room: room, jid: jid.toString()
+        user = @robot.brain.userForId from, room: room, jid: jid.toString()
         @receive new EnterMessage user
 
       when 'unavailable'
@@ -224,7 +224,7 @@ class XmppBot extends Adapter
 
         @robot.logger.debug "Unavailability received for #{from}"
 
-        user = @userForId from, room: room, jid: jid.toString()
+        user = @robot.brain.userForId from, room: room, jid: jid.toString()
         @receive new LeaveMessage(user)
 
   # Checks that the room parameter is a room the bot is in.
