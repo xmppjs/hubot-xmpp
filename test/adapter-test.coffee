@@ -320,6 +320,7 @@ describe 'XmppBot', ->
       name: 'bot'
       logger:
         debug: ->
+      brain: {}
 
     bot = Bot.use(robot)
     bot.options =
@@ -362,7 +363,7 @@ describe 'XmppBot', ->
           to: 'bot@example.com'
           from: 'room@example.com/mark'
           id: '12345'
-      bot.userForId = (id, user) ->
+      robot.brain.userForId = (id, user) ->
         assert.equal id, 'mark'
         user
       bot.readPresence stanza
@@ -411,7 +412,7 @@ describe 'XmppBot', ->
         assert.ok msg instanceof EnterMessage
         assert.equal msg.user.room, 'test@example.com'
 
-      bot.userForId = (id, user) ->
+      robot.brain.userForId = (id, user) ->
         assert.equal id, 'mark'
         user
 
@@ -428,7 +429,7 @@ describe 'XmppBot', ->
         assert.ok msg instanceof LeaveMessage
         assert.equal msg.user.room, 'test@example.com'
 
-      bot.userForId = (id, user) ->
+      robot.brain.userForId = (id, user) ->
         assert.equal id, 'mark'
         user
 
