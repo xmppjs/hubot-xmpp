@@ -4,6 +4,10 @@ Xmpp    = require 'node-xmpp'
 util    = require 'util'
 
 class XmppBot extends Adapter
+  
+  # Flag to log a warning message about group chat configuration only once
+  anonymousGroupChatWarningLogged = false
+  
   run: ->
     options =
       username: process.env.HUBOT_XMPP_USERNAME
@@ -133,13 +137,21 @@ class XmppBot extends Adapter
     return unless body
 
     message = body.getText()
-    [room, from] = stanza.attrs.from.split '/'
-    @robot.logger.debug "Received message: #{message} in room: #{room}, from: #{from}"
+    
+    if stanza.attrs.type == 'groupchat'
+      [room, from] = resolvePrivateJID(stanza)?
+      # Fallback to the groupchat jif if the real jid was not sent
+      from = new Xmpp.JID(stanza.attrs.from) unless from
+    else
+      from = new Xmpp.JID(stanza.attrs.from)
+      
+    @robot.logger.debug "Received message: #{message} in room: #{room}, from: #{jid.toString()}"
 
     # ignore our own messages in rooms
-    return if from == @robot.name or from == @options.username or from is undefined
+    # Try with username (if private chat or groupchat jid was resolved to real one) of fallback on the resource of group chat jid
+    return if from is undefined or from.username == @options.username or from.resource == @robot.name
 
-    # note that 'from' isn't a full JID, just the local user part
+    # note that 'from' in groupchat is not the real users jid. Use privateChatJid in user to send private message
     user = @robot.brain.userForId from
     user.type = stanza.attrs.type
     user.room = room
@@ -155,16 +167,6 @@ class XmppBot extends Adapter
     # presences for all members
     # http://xmpp.org/rfcs/rfc3921.html#rfc.section.2.2.1
     stanza.attrs.type ?= 'available'
-
-    # Parse a stanza and figure out where it came from.
-    getFrom = (stanza) =>
-      if bareJid not in @options.rooms
-        from = stanza.attrs.from
-      else
-        # room presence is stupid, and optional for some anonymous rooms
-        # http://xmpp.org/extensions/xep-0045.html#enter-nonanon
-        from = stanza.getChild('x', 'http://jabber.org/protocol/muc#user')?.getChild('item')?.attrs?.jid
-      return from
 
     switch stanza.attrs.type
       when 'subscribe'
@@ -185,48 +187,63 @@ class XmppBot extends Adapter
             id:   stanza.attrs.id
         )
       when 'available'
-        # for now, user IDs and user names are the same. we don't
-        # use full JIDs as user ID, since we don't get them in
-        # standard groupchat messages
-        from = getFrom(stanza)
-        return if not from?
-
-        [room, from] = from.split '/'
-
-        # ignore presence messages that sometimes get broadcast
-        return if not @messageFromRoom room
-
+        [room, privateChatJid] = resolvePrivateJID(stanza)?
+        return unless room
+          
         # If the presence is from us, track that.
         # Xmpp sends presence for every person in a room, when join it
         # Only after we've heard our own presence should we respond to
         # presence messages.
-        if from == @robot.name or from == @options.username
+        if from.user == @options.username
           @heardOwnPresence = true
           return
-
         return unless @heardOwnPresence
 
-        @robot.logger.debug "Availability received for #{from}"
+        @robot.logger.debug "Available received from #{jid.toString()} in room #{room} and is actually #{from.toString()}"
 
-        user = @robot.brain.userForId from, room: room, jid: jid.toString()
+        user = @robot.brain.userForId jid.toString(), room: room, privateChatJid: from.toString()
         @receive new EnterMessage user
 
       when 'unavailable'
-        from = getFrom(stanza)
-
-        [room, from] = from.split '/'
+        [room, privateChatJid] = resolvePrivateJID(stanza)?
+        return unless room
 
         # ignore presence messages that sometimes get broadcast
         return if not @messageFromRoom room
 
         # ignore our own messages in rooms
-        return if from == @robot.name or from == @options.username
+        return if from == @options.username
 
-        @robot.logger.debug "Unavailability received for #{from}"
+        @robot.logger.debug "Unavailable received from #{jid.toString()} in room #{room} and is actually #{from.toString()}"
 
-        user = @robot.brain.userForId from, room: room, jid: jid.toString()
+        user = @robot.brain.userForId jid.toString(), room: room, privateChatJid: from.toString()
         @receive new LeaveMessage(user)
 
+  # Accept a stanza from a group chat
+  # return [String: roomname, Xmpp.JID: privateJID] or null if not from a groupchat
+  resolvePrivateJID: ( stanza ) ->
+    jid = new Xmpp.JID(stanza.attrs.from)
+    
+    # Group chat jid are of the form room_name@conference.hostname/Room specific id
+    room = jid.bare().toString()
+    
+    # ignore presence messages that sometimes get broadcast
+    return null if not @messageFromRoom room
+    
+    # room presence in group chat uses a jid which is not the real user jid
+    # To send private message to a user seen in a groupchat, you need to get the real jid
+    # If the groupchat is configured to do so, the real jid is also sent as an extension
+    # http://xmpp.org/extensions/xep-0045.html#enter-nonanon
+    privateJID = stanza.getChild('x', 'http://jabber.org/protocol/muc#user')?.getChild('item')?.attrs?.jid
+    
+    unless privateJID
+      unless anonymousGroupChatWarningLogged
+        @robot.logger.warn "Could not get private JID from group chat. Make sure the server is configured to bradcast real jid for groupchat (see http://xmpp.org/extensions/xep-0045.html#enter-nonanon)"
+        anonymousGroupChatWarningLogged = true
+      return null
+    
+    return [room, new Xmpp.JID(privateJID)]
+        
   # Checks that the room parameter is a room the bot is in.
   messageFromRoom: (room) ->
     for joined in @options.rooms
@@ -238,6 +255,7 @@ class XmppBot extends Adapter
       @robot.logger.debug "Sending to #{envelope.room}: #{msg}"
 
       params =
+        # TODO @MacKeeper Use the brain to send a real private chat message
         to: if envelope.user?.type in ['direct', 'chat'] then "#{envelope.room}/#{envelope.user.id}" else envelope.room
         type: envelope.user?.type or 'groupchat'
 
