@@ -266,8 +266,9 @@ class XmppBot extends Adapter
       @robot.logger.debug "Sending to #{envelope.room}: #{msg}"
 
       params =
-        # TODO @MacKeeper Use the brain to send a real private chat message
-        to: if envelope.user?.type in ['direct', 'chat'] then "#{envelope.room}/#{envelope.user.id}" else envelope.room
+        # Send a real private chat if we know the real private JID, else, send to the groupchat JID but in private mode
+        # Note that if the original message was not a group chat message, envelope.user.privateChatJid will be undefined and envelope.user.id is the private JID
+        to: if envelope.user?.type in ['direct', 'chat'] then ( envelope.user.privateChatJid ? envelope.user.id ) else envelope.room
         type: envelope.user?.type or 'groupchat'
 
       if msg.attrs? # Xmpp.Element type

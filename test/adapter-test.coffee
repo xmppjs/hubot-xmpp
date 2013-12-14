@@ -407,7 +407,6 @@ describe 'XmppBot', ->
                 attrs:
                   jid: 'bot@example.com'
 
-      console.log "Executing 'should set @heardOwnPresence when the bot presence is received'"
       bot.readPresence stanza
       assert.ok bot.heardOwnPresence
 
@@ -508,21 +507,37 @@ describe 'XmppBot', ->
 
       bot.send envelope, 'testing'
 
-    it 'should send messages directly', (done) ->
+    it 'should send messages directly when message was private', (done) ->
       envelope =
         user:
-          id: 'mark'
+          id: 'mark@example.com'
           type: 'direct'
-        room: 'test@example.com'
+        room: null
 
       bot.client.send = (msg) ->
-        assert.equal msg.parent.attrs.to, 'test@example.com/mark'
+        assert.equal msg.parent.attrs.to, 'mark@example.com'
         assert.equal msg.parent.attrs.type, 'direct'
         assert.equal msg.getText(), 'testing'
         done()
 
       bot.send envelope, 'testing'
 
+    it 'should send messages directly when message was from groupchat', (done) ->
+      envelope =
+        user:
+          id: 'room@example.com/mark'
+          type: 'direct'
+          privateChatJid: 'mark@example.com'
+        room: 'room@example.com'
+
+      bot.client.send = (msg) ->
+        assert.equal msg.parent.attrs.to, 'mark@example.com'
+        assert.equal msg.parent.attrs.type, 'direct'
+        assert.equal msg.getText(), 'testing'
+        done()
+
+      bot.send envelope, 'testing'
+      
     it 'should send messages to the room', (done) ->
       envelope =
         user:
