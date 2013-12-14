@@ -179,12 +179,15 @@ describe 'XmppBot', ->
 
     it 'should ignore messages from self', ->
       bot.options.username = 'bot'
+      # Only need to ignore message from self in groupchat
+      stanza.attrs.type = 'groupchat'
       stanza.attrs.from = 'room@example.com/bot'
       assert.strictEqual bot.readMessage(stanza), undefined
 
-    it 'should ignore messages from the room', ->
-      stanza.attrs.from = 'test@example.com'
-      assert.strictEqual bot.readMessage(stanza), undefined
+    # FIXME What is this for?
+    #it 'should ignore messages from the room', ->
+    #  stanza.attrs.from = 'test@example.com'
+    #  assert.strictEqual bot.readMessage(stanza), undefined
 
     it 'should ignore messages with no body', ->
       stanza.getChild = () ->
@@ -192,13 +195,23 @@ describe 'XmppBot', ->
       assert.strictEqual bot.readMessage(stanza), undefined
 
     it 'should ignore messages we sent part 2', ->
+      stanza.attrs.type = 'groupchat'
       stanza.attrs.from = 'test@example.com/bot'
       assert.strictEqual bot.readMessage(stanza), undefined
 
-    it 'should send a message', (done) ->
+    it 'should send a message for private message', (done) ->
+      bot.receive = (message) ->
+        assert.equal message.user.room, undefined
+        assert.equal message.user.type, 'chat'
+        assert.equal message.text, 'message text'
+        done()
+      bot.readMessage stanza
+      
+    it 'should send a message for groupchat', (done) ->
+      stanza.attrs.type = 'groupchat'
       bot.receive = (message) ->
         assert.equal message.user.room, 'test@example.com'
-        assert.equal message.user.type, 'chat'
+        assert.equal message.user.type, 'groupchat'
         assert.equal message.text, 'message text'
         done()
       bot.readMessage stanza
@@ -324,6 +337,7 @@ describe 'XmppBot', ->
 
     bot = Bot.use(robot)
     bot.options =
+      username: 'bot'
       rooms: [ {jid: 'test@example.com', password: false} ]
     bot.client =
       send: ->
@@ -386,7 +400,14 @@ describe 'XmppBot', ->
           type: 'available'
           to: 'bot@example.com'
           from: 'test@example.com/bot'
+        getChild: ->
+          x = 
+            getChild: ->
+              {} = 
+                attrs:
+                  jid: 'bot@example.com'
 
+      console.log "Executing 'should set @heardOwnPresence when the bot presence is received'"
       bot.readPresence stanza
       assert.ok bot.heardOwnPresence
 
@@ -402,6 +423,12 @@ describe 'XmppBot', ->
           type: 'available'
           to: 'bot@example.com'
           from: 'test@example.com/mark'
+        getChild: ->
+          x = 
+            getChild: ->
+              {} = 
+                attrs:
+                  jid: 'bot@example.com'
 
       bot.readPresence stanza
 
@@ -411,9 +438,10 @@ describe 'XmppBot', ->
       bot.receive = (msg) ->
         assert.ok msg instanceof EnterMessage
         assert.equal msg.user.room, 'test@example.com'
+        assert.equal msg.user.privateChatJid, 'mark@example.com'
 
       robot.brain.userForId = (id, user) ->
-        assert.equal id, 'mark'
+        assert.equal id, 'test@example.com/mark'
         user
 
       stanza =
@@ -421,6 +449,12 @@ describe 'XmppBot', ->
           type: 'available'
           to: 'bot@example.com'
           from: 'test@example.com/mark'
+        getChild: ->
+          x = 
+            getChild: ->
+              {} = 
+                attrs:
+                  jid: 'mark@example.com'
 
       bot.readPresence stanza
 
@@ -430,7 +464,7 @@ describe 'XmppBot', ->
         assert.equal msg.user.room, 'test@example.com'
 
       robot.brain.userForId = (id, user) ->
-        assert.equal id, 'mark'
+        assert.equal id, 'test@example.com/mark'
         user
 
       stanza =
@@ -438,6 +472,12 @@ describe 'XmppBot', ->
           type: 'unavailable'
           to: 'bot@example.com'
           from: 'test@example.com/mark'
+        getChild: ->
+          x = 
+            getChild: ->
+              {} = 
+                attrs:
+                  jid: 'ernie@example.com'
 
       bot.readPresence stanza
 

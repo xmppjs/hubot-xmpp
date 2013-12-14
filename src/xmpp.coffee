@@ -2,7 +2,7 @@
 
 Xmpp    = require 'node-xmpp'
 util    = require 'util'
-
+ 
 class XmppBot extends Adapter
   
   # Flag to log a warning message about group chat configuration only once
@@ -131,7 +131,8 @@ class XmppBot extends Adapter
   readMessage: (stanza) =>
     # ignore non-messages
     return if stanza.attrs.type not in ['groupchat', 'direct', 'chat']
-
+    return if stanza.attrs.from is undefined
+    
     # ignore empty bodies (i.e., topic changes -- maybe watch these someday)
     body = stanza.getChild 'body'
     return unless body
@@ -139,17 +140,23 @@ class XmppBot extends Adapter
     message = body.getText()
     
     if stanza.attrs.type == 'groupchat'
-      [room, from] = resolvePrivateJID(stanza)?
-      # Fallback to the groupchat jif if the real jid was not sent
-      from = new Xmpp.JID(stanza.attrs.from) unless from
-    else
-      from = new Xmpp.JID(stanza.attrs.from)
+      # ignore our own messages in rooms
+      return if new Xmpp.JID(stanza.attrs.from).resource == @robot.name
       
-    @robot.logger.debug "Received message: #{message} in room: #{room}, from: #{jid.toString()}"
-
-    # ignore our own messages in rooms
-    # Try with username (if private chat or groupchat jid was resolved to real one) of fallback on the resource of group chat jid
-    return if from is undefined or from.username == @options.username or from.resource == @robot.name
+      # Check the brain for the real user jid
+      user = @robot.brain.userForId stanza.attrs.from
+      
+      # Fallback to the groupchat jid if we can't resolve the real JID
+      from = user?.privateChatJid ? stanza.attrs.from
+      
+      # Everything before the / is the room name in groupchat JID
+      room = new Xmpp.JID(stanza.attrs.from).bare()
+      
+    else
+      from = stanza.attrs.from
+      room = undefined
+      
+    @robot.logger.debug "Received message: #{message} in room: #{room}, from: #{from}"
 
     # note that 'from' in groupchat is not the real users jid. Use privateChatJid in user to send private message
     user = @robot.brain.userForId from
@@ -187,36 +194,40 @@ class XmppBot extends Adapter
             id:   stanza.attrs.id
         )
       when 'available'
-        [room, privateChatJid] = resolvePrivateJID(stanza)?
+        [room, privateChatJid] = @resolvePrivateJID(stanza)
         return unless room
           
+        from = new Xmpp.JID(stanza.attrs.from)
+        
         # If the presence is from us, track that.
         # Xmpp sends presence for every person in a room, when join it
         # Only after we've heard our own presence should we respond to
         # presence messages.
-        if from.user == @options.username
+        # Check for the user part of the private JID if found, else fallback on the resource part of the groupchat jid
+        if privateChatJid?.user = @options.username or from.resource == @robot.name
           @heardOwnPresence = true
           return
         return unless @heardOwnPresence
 
-        @robot.logger.debug "Available received from #{jid.toString()} in room #{room} and is actually #{from.toString()}"
+        @robot.logger.debug "Available received from #{from.toString()} in room #{room} and is actually #{privateChatJid.toString()}"
 
-        user = @robot.brain.userForId jid.toString(), room: room, privateChatJid: from.toString()
+        user = @robot.brain.userForId from.toString(), room: room, privateChatJid: privateChatJid.toString()
         @receive new EnterMessage user
 
       when 'unavailable'
-        [room, privateChatJid] = resolvePrivateJID(stanza)?
-        return unless room
+        from = new Xmpp.JID(stanza.attrs.from)
+        room = from.bare()
+        user = from.resource
 
         # ignore presence messages that sometimes get broadcast
         return if not @messageFromRoom room
 
         # ignore our own messages in rooms
-        return if from == @options.username
+        return if user == @options.username
 
-        @robot.logger.debug "Unavailable received from #{jid.toString()} in room #{room} and is actually #{from.toString()}"
+        @robot.logger.debug "Unavailable received from #{user} in room #{room}"
 
-        user = @robot.brain.userForId jid.toString(), room: room, privateChatJid: from.toString()
+        user = @robot.brain.userForId from.toString(), room: room
         @receive new LeaveMessage(user)
 
   # Accept a stanza from a group chat
@@ -228,7 +239,7 @@ class XmppBot extends Adapter
     room = jid.bare().toString()
     
     # ignore presence messages that sometimes get broadcast
-    return null if not @messageFromRoom room
+    return [room,null] if not @messageFromRoom room
     
     # room presence in group chat uses a jid which is not the real user jid
     # To send private message to a user seen in a groupchat, you need to get the real jid
@@ -240,7 +251,7 @@ class XmppBot extends Adapter
       unless anonymousGroupChatWarningLogged
         @robot.logger.warn "Could not get private JID from group chat. Make sure the server is configured to bradcast real jid for groupchat (see http://xmpp.org/extensions/xep-0045.html#enter-nonanon)"
         anonymousGroupChatWarningLogged = true
-      return null
+      return [room,null]
     
     return [room, new Xmpp.JID(privateJID)]
         
