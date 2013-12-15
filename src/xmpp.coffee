@@ -137,6 +137,8 @@ class XmppBot extends Adapter
     body = stanza.getChild 'body'
     return unless body
 
+    #console.log "Got message stanza #{util.inspect stanza, {depth:5}}"
+    
     from = stanza.attrs.from
     message = body.getText()
     
@@ -149,14 +151,14 @@ class XmppBot extends Adapter
 
     else
       room = undefined
-      
-    @robot.logger.debug "Received message: #{message} in room: #{room}, from: #{from}"
 
     # note that 'from' in groupchat is not the real users jid. Use privateChatJid in user to send private message
     user = @robot.brain.userForId from
     user.type = stanza.attrs.type
     user.room = room
 
+    @robot.logger.debug "Received message: #{message} in room: #{user.room}, from: #{user.name}. Private chat JID is #{user.privateChatJID}"
+    
     @receive new TextMessage(user, message)
 
   readPresence: (stanza) =>
@@ -188,6 +190,8 @@ class XmppBot extends Adapter
             id:   stanza.attrs.id
         )
       when 'available'
+        #console.log "Got available stanza #{util.inspect stanza, {depth:5}}"
+        
         [room, privateChatJid] = @resolvePrivateJID(stanza)
         return unless room
         
@@ -204,6 +208,7 @@ class XmppBot extends Adapter
           return
         return unless @heardOwnPresence
         
+        #console.log "Available received from #{from.toString()} in room #{room} and private chat jid is #{privateChatJid?.toString()}"
         @robot.logger.debug "Available received from #{from.toString()} in room #{room} and private chat jid is #{privateChatJid?.toString()}"
 
         user = @robot.brain.userForId from.toString(), room: room, privateChatJid: privateChatJid?.toString()
@@ -253,7 +258,7 @@ class XmppBot extends Adapter
   # Checks that the room parameter is a room the bot is in.
   messageFromRoom: (room) ->
     for joined in @options.rooms
-      return true if joined.jid == room
+      return true if joined.jid.toUpperCase() == room.toUpperCase()
     return false
 
   send: (envelope, messages...) ->
