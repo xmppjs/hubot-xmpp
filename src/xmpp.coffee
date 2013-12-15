@@ -137,23 +137,17 @@ class XmppBot extends Adapter
     body = stanza.getChild 'body'
     return unless body
 
+    from = stanza.attrs.from
     message = body.getText()
     
     if stanza.attrs.type == 'groupchat'
-      # ignore our own messages in rooms
-      return if new Xmpp.JID(stanza.attrs.from).resource == @robot.name
-      
-      # Check the brain for the real user jid
-      user = @robot.brain.userForId stanza.attrs.from
-      
-      # Fallback to the groupchat jid if we can't resolve the real JID
-      from = user?.privateChatJid ? stanza.attrs.from
-      
       # Everything before the / is the room name in groupchat JID
-      room = new Xmpp.JID(stanza.attrs.from).bare()
-      
+      [room, resource] = from.split '/'
+
+      # ignore our own messages in rooms
+      return if resource == @robot.name
+
     else
-      from = stanza.attrs.from
       room = undefined
       
     @robot.logger.debug "Received message: #{message} in room: #{room}, from: #{from}"
@@ -196,22 +190,23 @@ class XmppBot extends Adapter
       when 'available'
         [room, privateChatJid] = @resolvePrivateJID(stanza)
         return unless room
-          
+        
         from = new Xmpp.JID(stanza.attrs.from)
         
         # If the presence is from us, track that.
         # Xmpp sends presence for every person in a room, when join it
         # Only after we've heard our own presence should we respond to
         # presence messages.
+        # FIXME Why is that? If we receive our presence last, it means that we won't store the private JID of every users whose presence was sent before ours. 
         # Check for the user part of the private JID if found, else fallback on the resource part of the groupchat jid
-        if privateChatJid?.user = @options.username or from.resource == @robot.name
+        if privateChatJid?.user == @options.username or from.resource == @robot.name
           @heardOwnPresence = true
           return
         return unless @heardOwnPresence
+        
+        @robot.logger.debug "Available received from #{from.toString()} in room #{room} and private chat jid is #{privateChatJid?.toString()}"
 
-        @robot.logger.debug "Available received from #{from.toString()} in room #{room} and is actually #{privateChatJid.toString()}"
-
-        user = @robot.brain.userForId from.toString(), room: room, privateChatJid: privateChatJid.toString()
+        user = @robot.brain.userForId from.toString(), room: room, privateChatJid: privateChatJid?.toString()
         @receive new EnterMessage user
 
       when 'unavailable'
@@ -245,11 +240,11 @@ class XmppBot extends Adapter
     # To send private message to a user seen in a groupchat, you need to get the real jid
     # If the groupchat is configured to do so, the real jid is also sent as an extension
     # http://xmpp.org/extensions/xep-0045.html#enter-nonanon
-    privateJID = stanza.getChild('x', 'http://jabber.org/protocol/muc#user')?.getChild('item')?.attrs?.jid
+    privateJID = stanza.getChild('x', 'http://jabber.org/protocol/muc#user')?.getChild?('item')?.attrs?.jid
     
     unless privateJID
       unless anonymousGroupChatWarningLogged
-        @robot.logger.warn "Could not get private JID from group chat. Make sure the server is configured to bradcast real jid for groupchat (see http://xmpp.org/extensions/xep-0045.html#enter-nonanon)"
+        @robot.logger.warning "Could not get private JID from group chat. Make sure the server is configured to bradcast real jid for groupchat (see http://xmpp.org/extensions/xep-0045.html#enter-nonanon)"
         anonymousGroupChatWarningLogged = true
       return [room,null]
     

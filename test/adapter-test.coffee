@@ -1,7 +1,7 @@
 Bot = require '../src/xmpp'
 Xmpp = require 'node-xmpp'
 
-{Adapter,Robot,EnterMessage,LeaveMessage} = require 'hubot'
+{Adapter,Robot,EnterMessage,LeaveMessage,TextMessage,Brain} = require 'hubot'
 
 assert = require 'assert'
 
@@ -184,10 +184,10 @@ describe 'XmppBot', ->
       stanza.attrs.from = 'room@example.com/bot'
       assert.strictEqual bot.readMessage(stanza), undefined
 
-    # FIXME What is this for?
-    #it 'should ignore messages from the room', ->
-    #  stanza.attrs.from = 'test@example.com'
-    #  assert.strictEqual bot.readMessage(stanza), undefined
+    # FIXME It does pass anymore and I don't understand in which circumstances we will receive a presence messages from a room without a resource in the JID. What is this for?
+    it.skip 'should ignore messages from the room', -> 
+      stanza.attrs.from = 'test@example.com'
+      assert.strictEqual bot.readMessage(stanza), undefined
 
     it 'should ignore messages with no body', ->
       stanza.getChild = () ->
@@ -618,3 +618,91 @@ describe 'XmppBot', ->
         done()
 
       bot.online()
+
+  describe 'privateChatJID', ->
+    bot = null
+    beforeEach () ->
+      bot = Bot.use()
+      
+      bot.heardOwnPresence = true
+      
+      bot.options =
+        username: 'bot'
+        rooms: [ {jid:'test@example.com', password: false} ]
+
+      bot.client =
+        send: ->
+
+      bot.robot =
+        name: 'bot'
+        on: () ->
+        logger:
+          debug: ( msg ) ->
+            console.log msg
+          warning: ( msg ) ->
+            console.log msg
+          info: ( msg ) ->
+            console.log msg
+      bot.robot.brain = new Brain bot.robot
+            
+    it 'should add private jid to user when presence contains http://jabber.org/protocol/muc#user', (done) ->
+      # Send presence stanza with real jid sub element
+      bot.receive = (msg) ->
+      stanza =
+        attrs:
+          type: 'available'
+          to: 'bot@example.com'
+          from: 'test@example.com/mark'
+        getChild: ->
+          x = 
+            getChild: ->
+              {} = 
+                attrs:
+                  jid: 'mark@example.com'
+      bot.readPresence stanza
+    
+      # Send a groupchat message and check that the private JID was retreived
+      bot.receive = (msg) ->
+        assert.ok msg instanceof TextMessage
+        assert.equal msg.user.name, 'test@example.com/mark'
+        assert.equal msg.user.room, 'test@example.com'
+        assert.equal msg.user.privateChatJid, 'mark@example.com'
+        done()
+      stanza =
+        attrs:
+          type: 'groupchat'
+          from: 'test@example.com/mark'
+        getChild: ->
+          body =
+            getText: ->
+              'message text'
+      bot.readMessage stanza
+    
+    it 'should not fail when presence does not contain http://jabber.org/protocol/muc#user', (done) ->
+      # Send presence stanza without real jid subelement
+      bot.receive = (msg) ->
+      stanza =
+        attrs:
+          type: 'available'
+          to: 'bot@example.com'
+          from: 'test@example.com/mark'
+        getChild: ->
+          undefined
+      bot.readPresence stanza
+    
+      # Send a groupchat message and check that the private JID is undefined but message is sent through
+      bot.receive = (msg) ->
+        assert.ok msg instanceof TextMessage
+        assert.equal msg.user.name, 'test@example.com/mark'
+        assert.equal msg.user.room, 'test@example.com'
+        assert.equal msg.user.privateChatJid, undefined
+        done()
+      stanza =
+        attrs:
+          type: 'groupchat'
+          from: 'test@example.com/mark'
+        getChild: ->
+          body =
+            getText: ->
+              'message text'
+      bot.readMessage stanza
