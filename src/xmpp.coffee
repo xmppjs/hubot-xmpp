@@ -197,22 +197,20 @@ class XmppBot extends Adapter
         
         from = new Xmpp.JID(stanza.attrs.from)
         
-        # If the presence is from us, track that.
-        # Xmpp sends presence for every person in a room, when join it
-        # Only after we've heard our own presence should we respond to
-        # presence messages.
-        # FIXME Why is that? If we receive our presence last, it means that we won't store the private JID of every users whose presence was sent before ours. 
-        # Check for the user part of the private JID if found, else fallback on the resource part of the groupchat jid
-        if privateChatJid?.user == @options.username or from.resource == @robot.name
-          @heardOwnPresence = true
-          return
-        return unless @heardOwnPresence
-        
         #console.log "Available received from #{from.toString()} in room #{room} and private chat jid is #{privateChatJid?.toString()}"
         @robot.logger.debug "Available received from #{from.toString()} in room #{room} and private chat jid is #{privateChatJid?.toString()}"
 
         user = @robot.brain.userForId from.toString(), room: room, privateChatJid: privateChatJid?.toString()
-        @receive new EnterMessage user
+        
+        # If the presence is from us, track that.
+        # Check for the user part of the private JID if found, else fallback on the resource part of the groupchat jid
+        if privateChatJid?.user == @options.username or from.resource == @robot.name
+          @heardOwnPresence = true
+        
+        # Xmpp sends presence for every person in a room, when join it
+        # Only after we've heard our own presence should we respond to
+        # presence messages.
+        @receive new EnterMessage user unless not @heardOwnPresence
 
       when 'unavailable'
         from = new Xmpp.JID(stanza.attrs.from)
