@@ -1,7 +1,7 @@
 Bot = require '../src/xmpp'
 Xmpp = require 'node-xmpp'
 
-{Adapter,Robot,EnterMessage,LeaveMessage,TextMessage,Brain} = require 'hubot'
+{Adapter,Robot,EnterMessage,LeaveMessage,TextMessage} = require 'hubot'
 
 assert = require 'assert'
 
@@ -155,9 +155,12 @@ describe 'XmppBot', ->
     bot.robot =
       name: 'bot'
       brain:
-        userForId: ->
-          user =
-            id: 1
+        userForId: (id, options)->
+          user = {}
+          user['name'] = id
+          for k of (options or {})
+            user[k] = options[k]
+          return user
       logger:
         debug: () ->
         warning: () ->
@@ -184,8 +187,8 @@ describe 'XmppBot', ->
       stanza.attrs.from = 'room@example.com/bot'
       assert.strictEqual bot.readMessage(stanza), undefined
 
-    # FIXME It does pass anymore and I don't understand in which circumstances we will receive a presence messages from a room without a resource in the JID. What is this for?
-    it.skip 'should ignore messages from the room', -> 
+    it 'should ignore messages from the room', -> 
+      stanza.attrs.type = 'groupchat'
       stanza.attrs.from = 'test@example.com'
       assert.strictEqual bot.readMessage(stanza), undefined
 
@@ -201,8 +204,10 @@ describe 'XmppBot', ->
 
     it 'should send a message for private message', (done) ->
       bot.receive = (message) ->
-        assert.equal message.user.room, undefined
         assert.equal message.user.type, 'chat'
+        assert.equal message.user.name, 'ernie'
+        assert.equal message.user.privateChatJID, 'test@example.com/ernie'
+        assert.equal message.user.room, undefined
         assert.equal message.text, 'message text'
         done()
       bot.readMessage stanza
@@ -210,8 +215,9 @@ describe 'XmppBot', ->
     it 'should send a message for groupchat', (done) ->
       stanza.attrs.type = 'groupchat'
       bot.receive = (message) ->
-        assert.equal message.user.room, 'test@example.com'
         assert.equal message.user.type, 'groupchat'
+        assert.equal message.user.name, 'ernie'
+        assert.equal message.user.room, 'test@example.com'
         assert.equal message.text, 'message text'
         done()
       bot.readMessage stanza
@@ -329,18 +335,26 @@ describe 'XmppBot', ->
       bot.read stanza
 
   describe '#readPresence()', ->
-    robot =
-      name: 'bot'
-      logger:
-        debug: ->
-      brain: {}
-
-    bot = Bot.use(robot)
-    bot.options =
-      username: 'bot'
-      rooms: [ {jid: 'test@example.com', password: false} ]
-    bot.client =
-      send: ->
+    robot = null
+    bot = null
+    beforeEach () ->
+      robot =
+        name: 'bot'
+        logger:
+          debug: ->
+        brain:
+          userForId: (id, options)->
+            user = {}
+            user['name'] = id
+            for k of (options or {})
+              user[k] = options[k]
+            return user
+      bot = Bot.use(robot)
+      bot.options =
+        username: 'bot'
+        rooms: [ {jid: 'test@example.com', password: false} ]
+      bot.client =
+        send: ->
 
     it 'should handle subscribe types', (done) ->
       stanza =
@@ -377,10 +391,12 @@ describe 'XmppBot', ->
           to: 'bot@example.com'
           from: 'room@example.com/mark'
           id: '12345'
+      tmp_userForId = robot.brain.userForId
       robot.brain.userForId = (id, user) ->
         assert.equal id, 'mark'
         user
       bot.readPresence stanza
+      robot.brain.userForId = tmp_userForId
 
     it 'should not trigger @recieve for presences coming from a room the bot is not in', () ->
       bot.receive = (msg) ->
@@ -436,12 +452,9 @@ describe 'XmppBot', ->
 
       bot.receive = (msg) ->
         assert.ok msg instanceof EnterMessage
+        assert.equal msg.user.name, 'mark'
         assert.equal msg.user.room, 'test@example.com'
-        assert.equal msg.user.privateChatJid, 'mark@example.com'
-
-      robot.brain.userForId = (id, user) ->
-        assert.equal id, 'test@example.com/mark'
-        user
+        assert.equal msg.user.privateChatJID, 'mark@example.com/mark'
 
       stanza =
         attrs:
@@ -453,7 +466,7 @@ describe 'XmppBot', ->
             getChild: ->
               {} = 
                 attrs:
-                  jid: 'mark@example.com'
+                  jid: 'mark@example.com/mark'
 
       bot.readPresence stanza
 
@@ -462,21 +475,11 @@ describe 'XmppBot', ->
         assert.ok msg instanceof LeaveMessage
         assert.equal msg.user.room, 'test@example.com'
 
-      robot.brain.userForId = (id, user) ->
-        assert.equal id, 'test@example.com/mark'
-        user
-
       stanza =
         attrs:
           type: 'unavailable'
           to: 'bot@example.com'
           from: 'test@example.com/mark'
-        getChild: ->
-          x = 
-            getChild: ->
-              {} = 
-                attrs:
-                  jid: 'ernie@example.com'
 
       bot.readPresence stanza
 
@@ -510,8 +513,9 @@ describe 'XmppBot', ->
     it 'should send messages directly when message was private', (done) ->
       envelope =
         user:
-          id: 'mark@example.com'
+          id: 'mark'
           type: 'direct'
+          privateChatJID: 'mark@example.com'
         room: null
 
       bot.client.send = (msg) ->
@@ -522,12 +526,12 @@ describe 'XmppBot', ->
 
       bot.send envelope, 'testing'
 
-    it 'should send messages directly when message was from groupchat', (done) ->
+    it 'should send messages directly when message was from groupchat and real JID was provided', (done) ->
       envelope =
         user:
           id: 'room@example.com/mark'
           type: 'direct'
-          privateChatJid: 'mark@example.com'
+          privateChatJID: 'mark@example.com'
         room: 'room@example.com'
 
       bot.client.send = (msg) ->
@@ -538,10 +542,26 @@ describe 'XmppBot', ->
 
       bot.send envelope, 'testing'
       
+    it 'should send a message to private room JID when message was from groupchat and real JID was not provided', (done) ->
+      envelope =
+        user:
+          name: 'mark'
+          room: 'room@example.com'
+          type: 'direct'
+        room: 'room@example.com'
+
+      bot.client.send = (msg) ->
+        assert.equal msg.parent.attrs.to, 'room@example.com/mark'
+        assert.equal msg.parent.attrs.type, 'direct'
+        assert.equal msg.getText(), 'testing'
+        done()
+
+      bot.send envelope, 'testing'
+      
     it 'should send messages to the room', (done) ->
       envelope =
         user:
-          id: 'mark'
+          name: 'mark'
           type: 'groupchat'
         room: 'test@example.com'
 
@@ -556,7 +576,7 @@ describe 'XmppBot', ->
     it 'should accept Xmpp.Element objects as messages', (done) ->
       envelope =
         user:
-          id: 'mark'
+          name: 'mark'
           type: 'groupchat'
         room: 'test@example.com'
 
@@ -636,6 +656,13 @@ describe 'XmppBot', ->
       bot.robot =
         name: 'bot'
         on: () ->
+        brain:
+          userForId: (id, options)->
+            user = {}
+            user['name'] = id
+            for k of (options or {})
+              user[k] = options[k]
+            return user
         logger:
           debug: ( msg ) ->
             console.log msg
@@ -643,11 +670,11 @@ describe 'XmppBot', ->
             console.log msg
           info: ( msg ) ->
             console.log msg
-      bot.robot.brain = new Brain bot.robot
             
     it 'should add private jid to user when presence contains http://jabber.org/protocol/muc#user', (done) ->
       # Send presence stanza with real jid sub element
       bot.receive = (msg) ->
+        return
       stanza =
         attrs:
           type: 'available'
@@ -658,16 +685,10 @@ describe 'XmppBot', ->
             getChild: ->
               {} = 
                 attrs:
-                  jid: 'mark@example.com'
+                  jid: 'mark@example.com/mark'
       bot.readPresence stanza
     
       # Send a groupchat message and check that the private JID was retreived
-      bot.receive = (msg) ->
-        assert.ok msg instanceof TextMessage
-        assert.equal msg.user.name, 'test@example.com/mark'
-        assert.equal msg.user.room, 'test@example.com'
-        assert.equal msg.user.privateChatJid, 'mark@example.com'
-        done()
       stanza =
         attrs:
           type: 'groupchat'
@@ -676,11 +697,18 @@ describe 'XmppBot', ->
           body =
             getText: ->
               'message text'
+      bot.receive = (msg) ->
+        assert.ok msg instanceof TextMessage
+        assert.equal msg.user.name, 'mark'
+        assert.equal msg.user.room, 'test@example.com'
+        assert.equal msg.user.privateChatJID, 'mark@example.com/mark'
+        done()
       bot.readMessage stanza
     
     it 'should not fail when presence does not contain http://jabber.org/protocol/muc#user', (done) ->
       # Send presence stanza without real jid subelement
       bot.receive = (msg) ->
+        return
       stanza =
         attrs:
           type: 'available'
@@ -691,12 +719,6 @@ describe 'XmppBot', ->
       bot.readPresence stanza
     
       # Send a groupchat message and check that the private JID is undefined but message is sent through
-      bot.receive = (msg) ->
-        assert.ok msg instanceof TextMessage
-        assert.equal msg.user.name, 'test@example.com/mark'
-        assert.equal msg.user.room, 'test@example.com'
-        assert.equal msg.user.privateChatJid, undefined
-        done()
       stanza =
         attrs:
           type: 'groupchat'
@@ -705,4 +727,10 @@ describe 'XmppBot', ->
           body =
             getText: ->
               'message text'
+      bot.receive = (msg) ->
+        assert.ok msg instanceof TextMessage
+        assert.equal msg.user.name, 'mark'
+        assert.equal msg.user.room, 'test@example.com'
+        assert.equal msg.user.privateChatJID, undefined
+        done()
       bot.readMessage stanza
