@@ -264,7 +264,7 @@ class XmppBot extends Adapter
     
     unless privateJID
       unless anonymousGroupChatWarningLogged
-        @robot.logger.warning "Could not get private JID from group chat. Make sure the server is configured to bradcast real jid for groupchat (see http://xmpp.org/extensions/xep-0045.html#enter-nonanon)"
+        @robot.logger.warning "Could not get private JID from group chat. Make sure the server is configured to broadcast real jid for groupchat (see http://xmpp.org/extensions/xep-0045.html#enter-nonanon)"
         anonymousGroupChatWarningLogged = true
       return null
     
