@@ -205,7 +205,7 @@ describe 'XmppBot', ->
     it 'should send a message for private message', (done) ->
       bot.receive = (message) ->
         assert.equal message.user.type, 'chat'
-        assert.equal message.user.name, 'ernie'
+        assert.equal message.user.name, 'test'
         assert.equal message.user.privateChatJID, 'test@example.com/ernie'
         assert.equal message.user.room, undefined
         assert.equal message.text, 'message text'

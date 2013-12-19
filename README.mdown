@@ -47,4 +47,13 @@ and start up your bot.
 The jabber protocol does not broadcast real user JID in groupchat presence stanzas unless the server is configured to do so.
 If you need to send private chat in response to a groupchat message, use hubot's send method with the groupchat jid and envelope.user.type = 'groupchat'. hubot-xmpp will then automatically resolve 
 the jid to a private chat jid.
-If you need to get the private chat jid, you can use 'msg.user.privateChatJid' where msg is the parameter of hubot's "route" callback.
+If you need to get the private chat jid, you can use 'msg.envelope.user.privateChatJid' where msg is the parameter of hubot's "route" callback.
+Example:
+
+    robot.respond /talk to me$/i, ( msg ) ->
+        # Simply reply
+        msg.reply "Hello #{msg.envelope.user.name}. Your private JID is #{msg.envelope.user.privateChatJID}"
+  
+    robot.respond /talk to me in private$/i, ( msg ) ->
+        msg.envelope.user.type = 'direct'
+        msg.send "Hey #{msg.envelope.user.name}! You told me in room #{msg.envelope.user.room} to talk to you."

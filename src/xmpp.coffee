@@ -158,20 +158,23 @@ class XmppBot extends Adapter
       
       # Convert the room JID to private JID if we have one
       privateChatJID = @roomToPrivateJID[from]
-      [login, user] = privateChatJID.split '/' if privateChatJID
 
     else
-      [login, user] = from.split '/'
+      # Not sure how to get the user's alias. Use the username. The resource is not the user's alias but the unique client ID which is often the machine name
+      [user] = from.split '@'
+      # Not from a room
       room = undefined
       # Also store the private JID so we can use it in the send method
       privateChatJID = from
 
-    # note that 'from' isn't a full JID, just the local user part
+    # note that 'user' isn't a full JID in case of group chat, just the local user part
+    # FIXME Not sure it's a good idea to use the groupchat JID resource part as two users could have the same resource in two different rooms. I leave it as-is for backward compatiblity. A better idea would be to use the full groupchat JID.
     user = @robot.brain.userForId user
     user.type = stanza.attrs.type
     user.room = room
     user.privateChatJID = privateChatJID if privateChatJID
 
+    console.log "Received message: #{message} in room: #{user.room}, from: #{user.name}. Private chat JID is #{user.privateChatJID}"
     @robot.logger.debug "Received message: #{message} in room: #{user.room}, from: #{user.name}. Private chat JID is #{user.privateChatJID}"
     
     @receive new TextMessage(user, message)
@@ -224,8 +227,8 @@ class XmppBot extends Adapter
         @robot.logger.debug "Available received from #{fromJID.toString()} in room #{room} and private chat jid is #{privateChatJID?.toString()}"
         console.log "Available received from #{fromJID.toString()} in room #{room} and private chat jid is #{privateChatJID?.toString()}"
         
-        # Use the resource part (from real jid or room jid) as the user
-        user = @robot.brain.userForId ( privateChatJID ? fromJID ).resource, room: room, jid: fromJID.toString(), privateChatJID: privateChatJID?.toString()
+        # Use the resource part from the room jid as this is more likelly the user's name
+        user = @robot.brain.userForId fromJID.resource, room: room, jid: fromJID.toString(), privateChatJID: privateChatJID?.toString()
         
         # Xmpp sends presence for every person in a room, when join it
         # Only after we've heard our own presence should we respond to
