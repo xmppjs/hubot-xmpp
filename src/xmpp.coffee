@@ -152,8 +152,6 @@ class XmppBot extends Adapter
     body = stanza.getChild 'body'
     return unless body
 
-    #console.log "Got message stanza #{util.inspect stanza, {depth:5}}"
-    
     from = stanza.attrs.from
     message = body.getText()
     
@@ -182,7 +180,6 @@ class XmppBot extends Adapter
     user.room = room
     user.privateChatJID = privateChatJID if privateChatJID
 
-    console.log "Received message: #{message} in room: #{user.room}, from: #{user.name}. Private chat JID is #{user.privateChatJID}"
     @robot.logger.debug "Received message: #{message} in room: #{user.room}, from: #{user.name}. Private chat JID is #{user.privateChatJID}"
     
     @receive new TextMessage(user, message)
@@ -215,8 +212,6 @@ class XmppBot extends Adapter
             id:   stanza.attrs.id
         )
       when 'available'
-        #console.log "Got available stanza #{util.inspect stanza, {depth:5}}"
-        
         # If the presence is from us, track that.
         if fromJID.resource == @robot.name
           @heardOwnPresence = true
@@ -233,7 +228,6 @@ class XmppBot extends Adapter
         # Keep the room JID to private JID map in this class as there is an initialization race condition between the presence messages and the brain initial load. See https://github.com/github/hubot/issues/619
         @roomToPrivateJID[fromJID.toString()] = privateChatJID?.toString()
         @robot.logger.debug "Available received from #{fromJID.toString()} in room #{room} and private chat jid is #{privateChatJID?.toString()}"
-        console.log "Available received from #{fromJID.toString()} in room #{room} and private chat jid is #{privateChatJID?.toString()}"
         
         # Use the resource part from the room jid as this is more likelly the user's name
         user = @robot.brain.userForId fromJID.resource, room: room, jid: fromJID.toString(), privateChatJID: privateChatJID?.toString()
