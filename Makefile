@@ -3,5 +3,5 @@
 TESTS = test/*.coffee
 
 test:
-	mocha --compilers coffee:coffee-script $(TESTS)
+	./node_modules/.bin/mocha --compilers coffee:coffee-script $(TESTS)
 
