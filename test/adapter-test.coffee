@@ -192,7 +192,7 @@ describe 'XmppBot', ->
       stanza.attrs.from = 'room@example.com/bot'
       assert.strictEqual bot.readMessage(stanza), undefined
 
-    it 'should ignore messages from the room', -> 
+    it 'should ignore messages from the room', ->
       stanza.attrs.type = 'groupchat'
       stanza.attrs.from = 'test@example.com'
       assert.strictEqual bot.readMessage(stanza), undefined
@@ -216,7 +216,7 @@ describe 'XmppBot', ->
         assert.equal message.text, 'message text'
         done()
       bot.readMessage stanza
-      
+
     it 'should send a message for groupchat', (done) ->
       stanza.attrs.type = 'groupchat'
       bot.receive = (message) ->
@@ -422,9 +422,9 @@ describe 'XmppBot', ->
           to: 'bot@example.com'
           from: 'test@example.com/bot'
         getChild: ->
-          x = 
+          x =
             getChild: ->
-              {} = 
+              {} =
                 attrs:
                   jid: 'bot@example.com'
 
@@ -444,9 +444,9 @@ describe 'XmppBot', ->
           to: 'bot@example.com'
           from: 'test@example.com/mark'
         getChild: ->
-          x = 
+          x =
             getChild: ->
-              {} = 
+              {} =
                 attrs:
                   jid: 'bot@example.com'
 
@@ -467,9 +467,9 @@ describe 'XmppBot', ->
           to: 'bot@example.com'
           from: 'test@example.com/mark'
         getChild: ->
-          x = 
+          x =
             getChild: ->
-              {} = 
+              {} =
                 attrs:
                   jid: 'mark@example.com/mark'
 
@@ -546,7 +546,7 @@ describe 'XmppBot', ->
         done()
 
       bot.send envelope, 'testing'
-      
+
     it 'should send a message to private room JID when message was from groupchat and real JID was not provided', (done) ->
       envelope =
         user:
@@ -562,7 +562,7 @@ describe 'XmppBot', ->
         done()
 
       bot.send envelope, 'testing'
-      
+
     it 'should send messages to the room', (done) ->
       envelope =
         user:
@@ -648,9 +648,9 @@ describe 'XmppBot', ->
     bot = null
     beforeEach () ->
       bot = Bot.use()
-      
+
       bot.heardOwnPresence = true
-      
+
       bot.options =
         username: 'bot'
         rooms: [ {jid:'test@example.com', password: false} ]
@@ -669,13 +669,10 @@ describe 'XmppBot', ->
               user[k] = options[k]
             return user
         logger:
-          debug: ( msg ) ->
-            console.log msg
-          warning: ( msg ) ->
-            console.log msg
-          info: ( msg ) ->
-            console.log msg
-            
+          debug: () ->
+          warning: () ->
+          info: () ->
+
     it 'should add private jid to user when presence contains http://jabber.org/protocol/muc#user', (done) ->
       # Send presence stanza with real jid sub element
       bot.receive = (msg) ->
@@ -686,13 +683,13 @@ describe 'XmppBot', ->
           to: 'bot@example.com'
           from: 'test@example.com/mark'
         getChild: ->
-          x = 
+          x =
             getChild: ->
-              {} = 
+              {} =
                 attrs:
                   jid: 'mark@example.com/mark'
       bot.readPresence stanza
-    
+
       # Send a groupchat message and check that the private JID was retreived
       stanza =
         attrs:
@@ -709,7 +706,7 @@ describe 'XmppBot', ->
         assert.equal msg.user.privateChatJID, 'mark@example.com/mark'
         done()
       bot.readMessage stanza
-    
+
     it 'should not fail when presence does not contain http://jabber.org/protocol/muc#user', (done) ->
       # Send presence stanza without real jid subelement
       bot.receive = (msg) ->
@@ -722,7 +719,7 @@ describe 'XmppBot', ->
         getChild: ->
           undefined
       bot.readPresence stanza
-    
+
       # Send a groupchat message and check that the private JID is undefined but message is sent through
       stanza =
         attrs:
