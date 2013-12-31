@@ -299,13 +299,17 @@ class XmppBot extends Adapter
     for msg in messages
       @robot.logger.debug "Sending to #{envelope.room}: #{msg}"
 
+      to = envelope.room
+      if envelope.user?.type in ['direct', 'chat']
+        to = envelope.user.privateChatJID ? "#{envelope.room}/#{envelope.user.name}"
+
       params =
         # Send a real private chat if we know the real private JID,
         # else, send to the groupchat JID but in private mode
         # Note that if the original message was not a group chat
         # message, envelope.user.privateChatJID will be
         # set to the JID from that private message
-        to: if envelope.user?.type in ['direct', 'chat'] then ( envelope.user.privateChatJID ? "#{envelope.room}/#{envelope.user.name}" ) else envelope.room
+        to: to
         type: envelope.user?.type or 'groupchat'
 
       # Xmpp.Element type
