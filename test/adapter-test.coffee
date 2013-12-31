@@ -422,9 +422,9 @@ describe 'XmppBot', ->
           to: 'bot@example.com'
           from: 'test@example.com/bot'
         getChild: ->
-          x =
+          stub =
             getChild: ->
-              {} =
+              stub =
                 attrs:
                   jid: 'bot@example.com'
 
@@ -683,9 +683,9 @@ describe 'XmppBot', ->
           to: 'bot@example.com'
           from: 'test@example.com/mark'
         getChild: ->
-          x =
+          stub =
             getChild: ->
-              {} =
+              stub =
                 attrs:
                   jid: 'mark@example.com/mark'
       bot.readPresence stanza

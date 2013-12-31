@@ -1,10 +1,9 @@
 {Adapter,Robot,TextMessage,EnterMessage,LeaveMessage} = require 'hubot'
 
-Xmpp    = require 'node-xmpp'
-util    = require 'util'
+Xmpp = require 'node-xmpp'
+util = require 'util'
 
 class XmppBot extends Adapter
-
 
   constructor: ( robot ) ->
     @robot = robot
@@ -101,7 +100,8 @@ class XmppBot extends Adapter
       x = el.c('x', xmlns: 'http://jabber.org/protocol/muc')
       x.c('history', seconds: 1 )
 
-      if (room.password) then x.c('password').t(room.password)
+      if (room.password)
+        x.c('password').t(room.password)
       return x
 
   # XMPP Leaving a room - http://xmpp.org/extensions/xep-0045.html#exit
@@ -114,7 +114,9 @@ class XmppBot extends Adapter
     @client.send do =>
       @robot.logger.debug "Leaving #{room.jid}/#{@robot.name}"
 
-      return new Xmpp.Element('presence', to: "#{room.jid}/#{@robot.name}", type: 'unavailable')
+      return new Xmpp.Element('presence',
+        to: "#{room.jid}/#{@robot.name}",
+        type: 'unavailable')
 
   read: (stanza) =>
     if stanza.attrs.type is 'error'
@@ -139,8 +141,7 @@ class XmppBot extends Adapter
         to: stanza.attrs.from
         from: stanza.attrs.to
         type: 'result'
-        id: stanza.attrs.id
-      )
+        id: stanza.attrs.id)
 
       @robot.logger.debug "[sending pong] #{pong}"
       @client.send pong
@@ -243,7 +244,10 @@ class XmppBot extends Adapter
 
         # Use the resource part from the room jid as this
         # is more likelly the user's name
-        user = @robot.brain.userForId fromJID.resource, room: room, jid: fromJID.toString(), privateChatJID: privateChatJID?.toString()
+        user = @robot.brain.userForId(fromJID.resource,
+          room: room,
+          jid: fromJID.toString(),
+          privateChatJID: privateChatJID?.toString())
 
         # Xmpp sends presence for every person in a room, when join it
         # Only after we've heard our own presence should we respond to
@@ -278,9 +282,9 @@ class XmppBot extends Adapter
     privateJID = stanza.getChild('x', 'http://jabber.org/protocol/muc#user')?.getChild?('item')?.attrs?.jid
 
     unless privateJID
-      unless anonymousGroupChatWarningLogged
+      unless @anonymousGroupChatWarningLogged
         @robot.logger.warning "Could not get private JID from group chat. Make sure the server is configured to broadcast real jid for groupchat (see http://xmpp.org/extensions/xep-0045.html#enter-nonanon)"
-        anonymousGroupChatWarningLogged = true
+        @anonymousGroupChatWarningLogged = true
       return null
 
     return new Xmpp.JID(privateJID)
@@ -317,7 +321,8 @@ class XmppBot extends Adapter
 
   reply: (envelope, messages...) ->
     for msg in messages
-      if msg.attrs? #Xmpp.Element
+      # Xmpp.Element?
+      if msg.attrs?
         @send envelope, msg
       else
         @send envelope, "#{envelope.user.name}: #{msg}"
