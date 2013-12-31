@@ -69,21 +69,26 @@ describe 'XmppBot', ->
 
   describe '#leaveRoom()', ->
     bot = Bot.use()
-
     bot.client =
       stub: 'xmpp client'
-    bot.robot =
-      name: 'bot'
-      logger:
-        debug: () ->
+
     room =
       jid: 'test@example.com'
       password: false
+
+    beforeEach ->
+      bot.options =
+        rooms: [room]
+      bot.robot =
+        name: 'bot'
+        logger:
+          debug: () ->
 
     it 'should call @client.send()', (done) ->
       bot.client.send = (message) ->
         done()
       bot.leaveRoom room
+      assert.deepEqual [], bot.options.rooms
 
     it 'should call @client.send() with a presence element', (done) ->
       bot.client.send = (message) ->

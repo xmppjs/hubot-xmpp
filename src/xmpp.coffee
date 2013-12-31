@@ -22,7 +22,7 @@ class XmppBot extends Adapter
       password: '********'
       host: process.env.HUBOT_XMPP_HOST
       port: process.env.HUBOT_XMPP_PORT
-      rooms:    @parseRooms process.env.HUBOT_XMPP_ROOMS.split(',')
+      rooms: @parseRooms process.env.HUBOT_XMPP_ROOMS.split(',')
       # ms interval to send whitespace to xmpp server
       keepaliveInterval: 30000
       legacySSL: process.env.HUBOT_XMPP_LEGACYSSL
@@ -90,8 +90,6 @@ class XmppBot extends Adapter
 
   # XMPP Joining a room - http://xmpp.org/extensions/xep-0045.html#enter-muc
   joinRoom: (room) ->
-    # messageFromRoom check for joined rooms so add it to the list
-    options.rooms.push room
 
     @client.send do =>
       @robot.logger.debug "Joining #{room.jid}/#{@robot.name}"
@@ -109,9 +107,9 @@ class XmppBot extends Adapter
   # XMPP Leaving a room - http://xmpp.org/extensions/xep-0045.html#exit
   leaveRoom: (room) ->
     # messageFromRoom check for joined rooms so remvove it from the list
-    for joined, index in options.rooms
+    for joined, index in @options.rooms
       if joined.jid == room.jid
-        options.rooms.splice index, 1
+        @options.rooms.splice index, 1
 
     @client.send do =>
       @robot.logger.debug "Leaving #{room.jid}/#{@robot.name}"
