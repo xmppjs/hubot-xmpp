@@ -1,16 +1,16 @@
-## Hubot XMPP
+# Hubot XMPP
 
 Connects Hubot to your XMPP network 
 
 [![Build Status](https://secure.travis-ci.org/markstory/hubot-xmpp.png?branch=master)](http://travis-ci.org/markstory/hubot-xmpp)
 
-### Setup
+## Setup
 
 Install dependencies with `npm`
 
 	npm install
 
-### Configuration
+## Configuration
 
 There are a few configuration values you can use when getting hubot-xmpp
 running. The XMPP adapter requires only 3 (5 if you need specify server
@@ -33,7 +33,7 @@ Optional:
 your rooms require passwords you should use the `jid:password` syntax.
 Room passwords cannot contain `,`.
 
-### Installation
+## Installation
 
 After installing `hubot` with npm, you should create a standalone bot:
 
@@ -43,20 +43,28 @@ After creating your new bot, you should modify the `package.json` and add the
 `hubot-xmpp` dependency. After running `npm install` you should be ready to configure
 and start up your bot.
 
-### Group chat vs private JID
-The jabber protocol does not broadcast real user JID in groupchat presence stanzas unless the server is configured to do so.
+## Group chat vs private JID
 
-If you need to send private chat in response to a groupchat message, use hubot's send method with the groupchat jid and `envelope.user.type = 'groupchat'`. hubot-xmpp will then automatically resolve 
-the JID to a private chat JID.
+The jabber protocol does not broadcast real user JID in groupchat presence
+stanzas unless the server/chat room is configured to do so.
 
-If you need to get the private chat JID, you can use 'msg.envelope.user.privateChatJid' where msg is the parameter of hubot's "route" callback.
+If you need to send private chat in response to a groupchat message, use
+hubot's send method with the groupchat jid and `envelope.user.type = 'direct'`.
+hubot-xmpp will then automatically resolve the JID to a private
+chat JID, and private message the sender.
+
+If you need to get the private chat JID, you can use
+'msg.envelope.user.privateChatJid' where msg is the parameter of hubot's
+"route" callback.
 
 Example:
 
-    robot.respond /talk to me$/i, ( msg ) ->
-        # Simply reply
-        msg.reply "Hello #{msg.envelope.user.name}. Your private JID is #{msg.envelope.user.privateChatJID}"
-  
-    robot.respond /talk to me in private$/i, ( msg ) ->
-        msg.envelope.user.type = 'direct'
-        msg.send "Hey #{msg.envelope.user.name}! You told me in room #{msg.envelope.user.room} to talk to you."
+```coffeescript
+robot.respond /talk to me$/i, ( msg ) ->
+  # Simply reply
+  msg.reply "Hello #{msg.envelope.user.name}. Your private JID is #{msg.envelope.user.privateChatJID}"
+
+robot.respond /talk to me in private$/i, ( msg ) ->
+  msg.envelope.user.type = 'direct'
+  msg.send "Hey #{msg.envelope.user.name}! You told me in room #{msg.envelope.user.room} to talk to you."
+```
