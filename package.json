@@ -15,7 +15,7 @@
     "url": "http://github.com/markstory/hubot-xmpp/issues"
   },
   "scripts": {
-    "test": "mocha test/*"
+    "test": "make test"
   },
   "main": "./src/xmpp.coffee",
   "engine": "node > 0.6.0 < 0.8.0",
