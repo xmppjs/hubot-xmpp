@@ -20,8 +20,7 @@
   "main": "./src/xmpp.coffee",
   "engine": "node > 0.6.0 < 0.8.0",
   "dependencies": {
-    "node-xmpp": "0.3.2",
-    "node-expat": "1.6.1"
+    "node-xmpp": "0.10.0"
   },
   "devDependencies": {
     "coffee-script": "1.1.3",
