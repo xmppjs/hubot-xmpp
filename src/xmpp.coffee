@@ -26,6 +26,7 @@ class XmppBot extends Adapter
       keepaliveInterval: 30000
       legacySSL: process.env.HUBOT_XMPP_LEGACYSSL
       preferredSaslMechanism: process.env.HUBOT_XMPP_PREFERRED_SASL_MECHANISM
+      disallowTLS: process.env.HUBOT_XMPP_DISALLOW_TLS
 
     @robot.logger.info util.inspect(options)
     options.password = process.env.HUBOT_XMPP_PASSWORD
@@ -38,6 +39,7 @@ class XmppBot extends Adapter
       port: options.port
       legacySSL: options.legacySSL
       preferredSaslMechanism: options.preferredSaslMechanism
+      disallowTLS: options.disallowTLS
 
     @client.on 'error', @.error
     @client.on 'online', @.online
