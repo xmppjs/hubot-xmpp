@@ -67,7 +67,9 @@ class XmppBot extends Adapter
   online: =>
     @robot.logger.info 'Hubot XMPP client online'
 
-    @client.send new Xmpp.Element('presence')
+    presence = new Xmpp.Element 'presence'
+    presence.c('nick', xmlns: 'http://jabber.org/protocol/nick').t(@robot.name)
+    @client.send presence
     @robot.logger.info 'Hubot XMPP sent initial presence'
 
     @joinRoom room for room in @options.rooms

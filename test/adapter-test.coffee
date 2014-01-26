@@ -601,14 +601,14 @@ describe 'XmppBot', ->
     beforeEach () ->
       bot = Bot.use()
       bot.options =
-        username: 'bot'
+        username: 'mybot@example.com'
         rooms: [ {jid:'test@example.com', password: false} ]
 
       bot.client =
         send: ->
 
       bot.robot =
-        name: 'bot'
+        name: 'bert'
         logger:
           debug: () ->
           info: () ->
@@ -621,12 +621,15 @@ describe 'XmppBot', ->
 
       expected = [
         (msg) ->
+          root = msg.tree()
           assert.equal 'presence', msg.name, 'Element name is incorrect'
+          nick = root.getChild 'nick'
+          assert.equal 'bert', nick.getText()
         ,
         (msg) ->
           root = msg.tree()
           assert.equal 'presence', root.name, 'Element name is incorrect'
-          assert.equal "test@example.com/bot", root.attrs.to, 'Msg sent to wrong room'
+          assert.equal "test@example.com/bert", root.attrs.to, 'Msg sent to wrong room'
       ]
 
       bot.client.send = (msg) ->
