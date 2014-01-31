@@ -78,8 +78,7 @@ class XmppBot extends Adapter
 
     # send raw whitespace for keepalive
     @keepaliveInterval = setInterval =>
-      # @client.send '<iq from="#{@options.username}" to="#{client.jid.toString()}" id="pong" type="get"><ping xmlns="urn:xmpp:ping"/></iq>'
-      @client.send ' ' # this doesnt work
+      @client.send '<iq from="#{@client.jid.toString()}" to="#{client.jid.domain}" id="pong" type="get"><ping xmlns="urn:xmpp:ping"/></iq>'
     , @options.keepaliveInterval
 
     @emit if @connected then 'reconnected' else 'connected'
