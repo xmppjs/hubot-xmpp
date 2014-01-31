@@ -41,6 +41,8 @@ class XmppBot extends Adapter
       preferredSaslMechanism: options.preferredSaslMechanism
       disallowTLS: options.disallowTLS
 
+    @robot.logger.debug 'jid is', @client.jid
+
     @client.on 'error', @.error
     @client.on 'online', @.online
     @client.on 'stanza', @.read
@@ -76,7 +78,8 @@ class XmppBot extends Adapter
 
     # send raw whitespace for keepalive
     @keepaliveInterval = setInterval =>
-      @client.send ' '
+      # @client.send '<iq from="#{@options.username}" to="#{client.jid.toString()}" id="pong" type="get"><ping xmlns="urn:xmpp:ping"/></iq>'
+      @client.send ' ' # this doesnt work
     , @options.keepaliveInterval
 
     @emit if @connected then 'reconnected' else 'connected'
