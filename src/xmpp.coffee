@@ -80,6 +80,8 @@ class XmppBot extends Adapter
     @client.connection.socket.setTimeout 0
     setInterval(@ping, options.keepaliveInterval)
 
+    @robot.logger.debug 'jid is', @client.jid
+
     @client.on 'error', @.error
     @client.on 'online', @.online
     @client.on 'offline', @.offline
