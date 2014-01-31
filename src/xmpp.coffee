@@ -123,6 +123,7 @@ class XmppBot extends Adapter
         type: 'unavailable')
 
   read: (stanza) =>
+    @robot.logger.debug '[stanza]', stanza?.toString()
     if stanza.attrs.type is 'error'
       @robot.logger.error '[xmpp error]' + stanza
       return
