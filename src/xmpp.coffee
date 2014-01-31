@@ -79,11 +79,12 @@ class XmppBot extends Adapter
     # send raw whitespace for keepalive
     setInterval =>
       try
-        stanza = """<iq from="#{@client.jid.toString()}" to="#{@client.jid.domain}" id="pong" type="get"><ping xmlns="urn:xmpp:ping"/></iq>"""
-        @robot.logger.debug '[ping]', stanza
+        stanza = new Xmpp.Element 'iq', from:@client.jid.toString(), to:@client.jid.domain type:'get', id:'ping'
+        stanza.c 'ping', xmlns:'urn:xmpp:ping'
+        @robot.logger.debug '[ping]', stanza.toString()
         @client.send stanza
       catch error
-        @robot.logger.debug '[ping exception]', error
+        console.error '[ping exception]', error
 
     , @options.keepaliveInterval
 
