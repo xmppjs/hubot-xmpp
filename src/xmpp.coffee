@@ -77,9 +77,14 @@ class XmppBot extends Adapter
     @joinRoom room for room in @options.rooms
 
     # send raw whitespace for keepalive
-    @keepaliveInterval = setInterval =>
-      @robot.logger.debug '[ping]'
-      @client.send """<iq from="#{@client.jid.toString()}" to="#{client.jid.domain}" id="pong" type="get"><ping xmlns="urn:xmpp:ping"/></iq>"""
+    setInterval =>
+      try
+        stanza = new Xmpp.Stanza """<iq from="#{@client.jid.toString()}" to="#{client.jid.domain}" id="pong" type="get"><ping xmlns="urn:xmpp:ping"/></iq>"""
+        @robot.logger.debug '[ping]', stanza.toString()
+        @client.send stanza
+      catch error
+        @robot.logger.debug '[ping exception]', error
+
     , @options.keepaliveInterval
 
     @emit if @connected then 'reconnected' else 'connected'
