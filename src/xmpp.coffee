@@ -77,9 +77,9 @@ class XmppBot extends Adapter
     @joinRoom room for room in @options.rooms
 
     # send raw whitespace for keepalive
-    setInterval =>
+    @keepaliveInterval setInterval =>
       try
-        stanza = new Xmpp.Element 'iq', from:@client.jid.toString(), to:@client.jid.domain type:'get', id:'ping'
+        stanza = new Xmpp.Element 'iq', from:@client.jid.toString(), to:@client.jid.domain, type:'get', id:'ping'
         stanza.c 'ping', xmlns:'urn:xmpp:ping'
         @robot.logger.debug '[ping]', stanza.toString()
         @client.send stanza
@@ -364,7 +364,8 @@ class XmppBot extends Adapter
 
   offline: =>
     @robot.logger.debug "Received offline event"
-    clearInterval(@keepaliveInterval)
+    @client.connect()
+    # clearInterval(@keepaliveInterval)
 
 exports.use = (robot) ->
   new XmppBot robot
