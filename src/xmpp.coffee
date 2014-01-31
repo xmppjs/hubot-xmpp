@@ -77,7 +77,7 @@ class XmppBot extends Adapter
     @joinRoom room for room in @options.rooms
 
     # send raw whitespace for keepalive
-    @keepaliveInterval setInterval =>
+    @keepaliveInterval = setInterval =>
       try
         stanza = new Xmpp.Element 'iq', from:@client.jid.toString(), to:@client.jid.domain, type:'get', id:'ping'
         stanza.c 'ping', xmlns:'urn:xmpp:ping'
