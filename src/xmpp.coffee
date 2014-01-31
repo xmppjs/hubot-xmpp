@@ -78,6 +78,7 @@ class XmppBot extends Adapter
 
     # send raw whitespace for keepalive
     @keepaliveInterval = setInterval =>
+      @robot.logger.debug '[ping]'
       @client.send '<iq from="#{@client.jid.toString()}" to="#{client.jid.domain}" id="pong" type="get"><ping xmlns="urn:xmpp:ping"/></iq>'
     , @options.keepaliveInterval
 
