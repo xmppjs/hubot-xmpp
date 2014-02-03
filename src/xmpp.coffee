@@ -41,6 +41,8 @@ class XmppBot extends Adapter
       preferredSaslMechanism: options.preferredSaslMechanism
       disallowTLS: options.disallowTLS
 
+    @robot.logger.debug 'jid is', @client.jid
+
     @client.on 'error', @.error
     @client.on 'online', @.online
     @client.on 'stanza', @.read
@@ -76,7 +78,14 @@ class XmppBot extends Adapter
 
     # send raw whitespace for keepalive
     @keepaliveInterval = setInterval =>
-      @client.send ' '
+      try
+        stanza = new Xmpp.Element 'iq', from:@client.jid.toString(), to:@client.jid.domain, type:'get', id:'ping'
+        stanza.c 'ping', xmlns:'urn:xmpp:ping'
+        @robot.logger.debug '[ping]', stanza.toString()
+        @client.send stanza
+      catch error
+        console.error '[ping exception]', error
+
     , @options.keepaliveInterval
 
     @emit if @connected then 'reconnected' else 'connected'
@@ -123,6 +132,7 @@ class XmppBot extends Adapter
         type: 'unavailable')
 
   read: (stanza) =>
+    @robot.logger.debug '[stanza]', stanza?.toString()
     if stanza.attrs.type is 'error'
       @robot.logger.error '[xmpp error]' + stanza
       return
@@ -151,6 +161,12 @@ class XmppBot extends Adapter
       @client.send pong
 
   readMessage: (stanza) =>
+    
+    if x = stanza.getChild('x', 'jabber:x:conference') and x?.attrs?
+      @robot.logger.debug '[joining room]', x.attrs
+      @options.rooms.push x.attrs
+      @joinRoom x.attrs
+    
     # ignore non-messages
     return if stanza.attrs.type not in ['groupchat', 'direct', 'chat']
     return if stanza.attrs.from is undefined
@@ -347,7 +363,8 @@ class XmppBot extends Adapter
     @client.send message
 
   offline: =>
-    @robot.logger.debug "Received offline event"
+    @robot.logger.debug "Received offline event", @client.connect?
+    @client.connect()
     clearInterval(@keepaliveInterval)
 
 exports.use = (robot) ->
