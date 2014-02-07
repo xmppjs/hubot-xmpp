@@ -32,7 +32,8 @@ Optional:
 
 `HUBOT_XMPP_ROOMS` can be a comma separated list of rooms to join.  If
 your rooms require passwords you should use the `jid:password` syntax.
-Room passwords cannot contain `,`.
+Room passwords cannot contain `,`. Room names must be the full jid of the 
+room for example `dev@conference.jabber.example.org`.
 
 ## Installation
 
