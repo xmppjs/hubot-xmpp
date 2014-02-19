@@ -17,7 +17,7 @@
   "scripts": {
     "test": "mocha test/*"
   },
-  "main": "./src/xmpp.coffee",
+  "main": "./src/xmpp",
   "engine": "node > 0.6.0 < 0.8.0",
   "dependencies": {
     "node-xmpp": "0.3.2",
