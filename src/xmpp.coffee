@@ -41,14 +41,11 @@ class XmppBot extends Adapter
       preferredSaslMechanism: options.preferredSaslMechanism
       disallowTLS: options.disallowTLS
 
-<<<<<<< HEAD
     @robot.logger.debug 'jid is', @client.jid
 
-=======
     @client.socket.setTimeout 0
     @client.socket.setKeepAlive true, options.keepaliveInterval
-      
->>>>>>> Fixed keepalive.
+
     @client.on 'error', @.error
     @client.on 'online', @.online
     @client.on 'stanza', @.read
