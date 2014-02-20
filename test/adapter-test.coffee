@@ -640,9 +640,9 @@ describe 'XmppBot', ->
 
     it 'should emit reconnected when connected', (done) ->
       bot.connected = true
+
       bot.on 'reconnected', () ->
         assert.ok bot.connected
-        assert.ok bot.keepaliveInterval
         done()
 
       bot.online()
