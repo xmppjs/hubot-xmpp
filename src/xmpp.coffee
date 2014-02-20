@@ -30,7 +30,8 @@ class XmppBot extends Adapter
 
     @robot.logger.info util.inspect(options)
     options.password = process.env.HUBOT_XMPP_PASSWORD
-
+    @options = options
+    
     @client = new Xmpp.Client
       reconnect: true
       jid: options.username
@@ -40,17 +41,13 @@ class XmppBot extends Adapter
       legacySSL: options.legacySSL
       preferredSaslMechanism: options.preferredSaslMechanism
       disallowTLS: options.disallowTLS
-
-    @client.on 'connection', ()=>
-      @client.connection.socket.setTimeout 0
-      @client.connection.socket.setKeepAlive true, options.keepaliveInterval
       
     @client.on 'error', @.error
     @client.on 'online', @.online
     @client.on 'stanza', @.read
     @client.on 'offline', @.offline
 
-    @options = options
+
     @connected = false
 
   error: (error) =>
@@ -71,6 +68,10 @@ class XmppBot extends Adapter
   online: =>
     @robot.logger.info 'Hubot XMPP client online'
 
+    # Setup keepalive
+    @client.socket.setTimeout 0
+    @client.socket.setKeepAlive true, options.keepaliveInterval
+    
     presence = new Xmpp.Element 'presence'
     presence.c('nick', xmlns: 'http://jabber.org/protocol/nick').t(@robot.name)
     @client.send presence
