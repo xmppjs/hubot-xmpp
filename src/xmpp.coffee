@@ -369,6 +369,7 @@ class XmppBot extends Adapter
     @robot.logger.debug "Received offline event", @client.connect?
     @client.connect()
     clearInterval(@keepaliveInterval)
+    @robot.logger.debug "Received offline event"
 
 exports.use = (robot) ->
   new XmppBot robot
