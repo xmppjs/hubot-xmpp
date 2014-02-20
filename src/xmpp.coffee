@@ -43,7 +43,7 @@ class XmppBot extends Adapter
 
     @client.socket.setTimeout 0
     @client.socket.setKeepAlive true, options.keepaliveInterval
-      
+
     @client.on 'error', @.error
     @client.on 'online', @.online
     @client.on 'stanza', @.read
