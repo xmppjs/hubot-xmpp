@@ -739,3 +739,35 @@ describe 'XmppBot', ->
         assert.equal msg.user.privateChatJID, undefined
         done()
       bot.readMessage stanza
+
+  describe '#configClient', ->
+    bot = null
+    options =
+      keepaliveInterval: 30000
+
+    beforeEach () ->
+      bot = Bot.use()
+      bot.client =
+        socket: {}
+        on: ->
+        send: ->
+
+    it 'should set timeouts', () ->
+      bot.client.socket.setTimeout = (val) ->
+        assert.equal 0, val, 'Should be 0'
+      bot.client.socket.setKeepAlive = (mode, duration) ->
+        assert.ok mode, 'Should turn keepalive on'
+        assert.equal options.keepaliveInterval, duration
+      bot.configClient(options)
+
+    it 'should set event listeners', () ->
+      bot.client.socket.setTimeout = ->
+      bot.client.socket.setKeepAlive = ->
+
+      onCalls = []
+      bot.client.on = (event, cb) ->
+        onCalls.push(event)
+      bot.configClient(options)
+
+      expected = ['error', 'online', 'stanza', 'offline']
+      assert.deepEqual onCalls, expected

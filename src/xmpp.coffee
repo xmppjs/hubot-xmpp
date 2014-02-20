@@ -43,6 +43,11 @@ class XmppBot extends Adapter
 
     @robot.logger.debug 'jid is', @client.jid
 
+    @options = options
+    @connected = false
+    @configClient()
+
+  configClient: (options) ->
     @client.socket.setTimeout 0
     @client.socket.setKeepAlive true, options.keepaliveInterval
 
@@ -51,8 +56,6 @@ class XmppBot extends Adapter
     @client.on 'stanza', @.read
     @client.on 'offline', @.offline
 
-    @options = options
-    @connected = false
 
   error: (error) =>
     if error.code == "ECONNREFUSED"
