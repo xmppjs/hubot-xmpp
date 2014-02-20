@@ -17,7 +17,7 @@
   "scripts": {
     "test": "make test"
   },
-  "main": "./src/xmpp.coffee",
+  "main": "./src/xmpp",
   "engine": "node > 0.6.0 < 0.8.0",
   "dependencies": {
     "node-xmpp": "0.10.0"

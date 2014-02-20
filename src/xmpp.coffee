@@ -41,13 +41,19 @@ class XmppBot extends Adapter
       preferredSaslMechanism: options.preferredSaslMechanism
       disallowTLS: options.disallowTLS
 
+    @options = options
+    @connected = false
+    @configClient()
+
+  configClient: (options) ->
+    @client.socket.setTimeout 0
+    @client.socket.setKeepAlive true, options.keepaliveInterval
+
     @client.on 'error', @.error
     @client.on 'online', @.online
     @client.on 'stanza', @.read
     @client.on 'offline', @.offline
 
-    @options = options
-    @connected = false
 
   error: (error) =>
     if error.code == "ECONNREFUSED"
@@ -73,11 +79,6 @@ class XmppBot extends Adapter
     @robot.logger.info 'Hubot XMPP sent initial presence'
 
     @joinRoom room for room in @options.rooms
-
-    # send raw whitespace for keepalive
-    @keepaliveInterval = setInterval =>
-      @client.send ' '
-    , @options.keepaliveInterval
 
     @emit if @connected then 'reconnected' else 'connected'
     @connected = true
@@ -348,7 +349,6 @@ class XmppBot extends Adapter
 
   offline: =>
     @robot.logger.debug "Received offline event"
-    clearInterval(@keepaliveInterval)
 
 exports.use = (robot) ->
   new XmppBot robot
