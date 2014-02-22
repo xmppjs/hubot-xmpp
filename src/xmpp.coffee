@@ -41,8 +41,9 @@ class XmppBot extends Adapter
       preferredSaslMechanism: options.preferredSaslMechanism
       disallowTLS: options.disallowTLS
 
-    @client.socket.setTimeout 0
-    @client.socket.setKeepAlive true, options.keepaliveInterval
+    @client.on 'connection', ()=>
+      @client.connection.socket.setTimeout 0
+      @client.connection.socket.setKeepAlive true, options.keepaliveInterval
       
     @client.on 'error', @.error
     @client.on 'online', @.online
