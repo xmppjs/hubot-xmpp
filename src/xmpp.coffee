@@ -47,7 +47,6 @@ class XmppBot extends Adapter
     @client.on 'stanza', @.read
     @client.on 'offline', @.offline
 
-
     @connected = false
 
   error: (error) =>
