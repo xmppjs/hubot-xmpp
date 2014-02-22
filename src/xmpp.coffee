@@ -30,6 +30,7 @@ class XmppBot extends Adapter
 
     @robot.logger.info util.inspect(options)
     options.password = process.env.HUBOT_XMPP_PASSWORD
+    @options = options
 
     @client = new Xmpp.Client
       reconnect: true
@@ -41,9 +42,8 @@ class XmppBot extends Adapter
       preferredSaslMechanism: options.preferredSaslMechanism
       disallowTLS: options.disallowTLS
 
-    @options = options
     @connected = false
-    @configClient()
+    @configClient(options)
 
   configClient: (options) ->
     @client.socket.setTimeout 0
@@ -53,7 +53,6 @@ class XmppBot extends Adapter
     @client.on 'online', @.online
     @client.on 'stanza', @.read
     @client.on 'offline', @.offline
-
 
   error: (error) =>
     if error.code == "ECONNREFUSED"
@@ -72,6 +71,10 @@ class XmppBot extends Adapter
 
   online: =>
     @robot.logger.info 'Hubot XMPP client online'
+
+    # Setup keepalive
+    @client.connection.socket.setTimeout 0
+    @client.connection.socket.setKeepAlive true, @options.keepaliveInterval
 
     presence = new Xmpp.Element 'presence'
     presence.c('nick', xmlns: 'http://jabber.org/protocol/nick').t(@robot.name)
