@@ -68,8 +68,8 @@ class XmppBot extends Adapter
     @robot.logger.info 'Hubot XMPP client online'
 
     # Setup keepalive
-    @client.socket.setTimeout 0
-    @client.socket.setKeepAlive true, options.keepaliveInterval
+    @client.connection.socket.setTimeout 0
+    @client.connection.socket.setKeepAlive true, options.keepaliveInterval
     
     presence = new Xmpp.Element 'presence'
     presence.c('nick', xmlns: 'http://jabber.org/protocol/nick').t(@robot.name)
