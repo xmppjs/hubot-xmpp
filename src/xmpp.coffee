@@ -30,7 +30,6 @@ class XmppBot extends Adapter
 
     @robot.logger.info util.inspect(options)
     options.password = process.env.HUBOT_XMPP_PASSWORD
-    @options = options
 
     @client = new Xmpp.Client
       reconnect: true
@@ -50,8 +49,8 @@ class XmppBot extends Adapter
     @configClient(options)
 
   configClient: (options) ->
-    @client.socket.setTimeout 0
-    @client.socket.setKeepAlive true, options.keepaliveInterval
+    @client.connection.socket.setTimeout 0
+    @client.connection.socket.setKeepAlive true, options.keepaliveInterval
 
     @client.on 'error', @.error
     @client.on 'online', @.online
@@ -113,7 +112,6 @@ class XmppBot extends Adapter
 
   # XMPP Joining a room - http://xmpp.org/extensions/xep-0045.html#enter-muc
   joinRoom: (room) ->
-
     @client.send do =>
       @robot.logger.debug "Joining #{room.jid}/#{@robot.name}"
 
