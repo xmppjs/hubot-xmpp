@@ -43,17 +43,16 @@ class XmppBot extends Adapter
 
     @options = options
     @connected = false
-    @configClient()
+    @configClient(options)
 
   configClient: (options) ->
-    @client.socket.setTimeout 0
-    @client.socket.setKeepAlive true, options.keepaliveInterval
+    @client.connection.socket.setTimeout 0
+    @client.connection.socket.setKeepAlive true, options.keepaliveInterval
 
     @client.on 'error', @.error
     @client.on 'online', @.online
     @client.on 'stanza', @.read
     @client.on 'offline', @.offline
-
 
   error: (error) =>
     if error.code == "ECONNREFUSED"
@@ -72,6 +71,10 @@ class XmppBot extends Adapter
 
   online: =>
     @robot.logger.info 'Hubot XMPP client online'
+
+    # Setup keepalive
+    @client.connection.socket.setTimeout 0
+    @client.connection.socket.setKeepAlive true, @options.keepaliveInterval
 
     presence = new Xmpp.Element 'presence'
     presence.c('nick', xmlns: 'http://jabber.org/protocol/nick').t(@robot.name)
@@ -94,7 +97,6 @@ class XmppBot extends Adapter
 
   # XMPP Joining a room - http://xmpp.org/extensions/xep-0045.html#enter-muc
   joinRoom: (room) ->
-
     @client.send do =>
       @robot.logger.debug "Joining #{room.jid}/#{@robot.name}"
 
