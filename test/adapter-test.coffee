@@ -605,6 +605,10 @@ describe 'XmppBot', ->
         rooms: [ {jid:'test@example.com', password: false} ]
 
       bot.client =
+        connection:
+          socket:
+            setTimeout: () ->
+            setKeepAlive: () ->
         send: ->
 
       bot.robot =
@@ -748,21 +752,22 @@ describe 'XmppBot', ->
     beforeEach () ->
       bot = Bot.use()
       bot.client =
-        socket: {}
+        connection:
+          socket: {}
         on: ->
         send: ->
 
     it 'should set timeouts', () ->
-      bot.client.socket.setTimeout = (val) ->
+      bot.client.connection.socket.setTimeout = (val) ->
         assert.equal 0, val, 'Should be 0'
-      bot.client.socket.setKeepAlive = (mode, duration) ->
+      bot.client.connection.socket.setKeepAlive = (mode, duration) ->
         assert.ok mode, 'Should turn keepalive on'
         assert.equal options.keepaliveInterval, duration
       bot.configClient(options)
 
     it 'should set event listeners', () ->
-      bot.client.socket.setTimeout = ->
-      bot.client.socket.setKeepAlive = ->
+      bot.client.connection.socket.setTimeout = ->
+      bot.client.connection.socket.setKeepAlive = ->
 
       onCalls = []
       bot.client.on = (event, cb) ->
