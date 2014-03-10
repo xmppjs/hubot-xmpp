@@ -31,6 +31,13 @@ class XmppBot extends Adapter
     @robot.logger.info util.inspect(options)
     options.password = process.env.HUBOT_XMPP_PASSWORD
 
+    @options = options
+    @connected = false
+    @makeClient()
+
+  makeClient: () ->
+    options = @options
+
     @client = new Xmpp.Client
       reconnect: true
       jid: options.username
@@ -41,33 +48,21 @@ class XmppBot extends Adapter
       preferredSaslMechanism: options.preferredSaslMechanism
       disallowTLS: options.disallowTLS
 
-    @options = options
-    @connected = false
-    @configClient(options)
-
-  configClient: (options) ->
     @client.connection.socket.setTimeout 0
     @client.connection.socket.setKeepAlive true, options.keepaliveInterval
 
     @client.on 'error', @.error
     @client.on 'online', @.online
-    @client.on 'stanza', @.read
     @client.on 'offline', @.offline
+    @client.on 'stanza', @.read
+    @client.on 'end', () =>
+      @robot.logger.info 'Connection closed, attempting to reconnect'
+      setTimeout () =>
+        @makeClient()
+      , 2000
 
   error: (error) =>
-    if error.code == "ECONNREFUSED"
-      @robot.logger.error "Connection refused, exiting"
-      setTimeout () ->
-        process.exit(1)
-      , 1500
-    else if error.children?[0]?.name == "system-shutdown"
-      @robot.logger.error "Server shutdown detected, exiting"
-      setTimeout () ->
-        process.exit(1)
-      , 1500
-    else
-      @robot.logger.error error.toString()
-      console.log util.inspect(error.children?[0]?.name, { showHidden: true, depth: 1 })
+      @robot.logger.error "Received error #{error.toString()}"
 
   online: =>
     @robot.logger.info 'Hubot XMPP client online'
