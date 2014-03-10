@@ -1,12 +1,22 @@
 {
   "name": "hubot-xmpp",
   "version": "0.1.10",
-  "author": "Mark Story <mark@mark-story.com> (http://mark-story.com)",
+  "author": {
+    "name": "Mark Story",
+    "email": "mark@mark-story.com",
+    "url": "http://mark-story.com"
+  },
   "description": "XMPP adapter for Hubot.",
-  "keywords": ["hubot", "xmpp", "adapter"],
-  "licenses": [{
-    "type": "MIT"
-  }],
+  "keywords": [
+    "hubot",
+    "xmpp",
+    "adapter"
+  ],
+  "licenses": [
+    {
+      "type": "MIT"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/markstory/hubot-xmpp.git"
@@ -20,11 +30,20 @@
   "main": "./src/xmpp",
   "engine": "node > 0.6.0 < 0.8.0",
   "dependencies": {
-    "node-xmpp": "0.10.0"
+    "node-xmpp": "0.15.0"
   },
   "devDependencies": {
     "coffee-script": "1.1.3",
     "mocha": "1.15.1",
     "hubot": ">=2.4.1"
-  }
+  },
+  "readme": "# Hubot XMPP\n\nConnects Hubot to your XMPP network \n\n[![Build Status](https://secure.travis-ci.org/markstory/hubot-xmpp.png?branch=master)](http://travis-ci.org/markstory/hubot-xmpp)\n\n## Setup\n\nInstall dependencies with `npm`\n\n\tnpm install\n\n## Configuration\n\nThere are a few configuration values you can use when getting hubot-xmpp\nrunning. The XMPP adapter requires only 3 (5 if you need specify server\nand port) environment variables to be set to able to use it.\n\n* `HUBOT_XMPP_USERNAME`\n* `HUBOT_XMPP_PASSWORD`\n* `HUBOT_XMPP_ROOMS`\n\nOptional:\n\n* `HUBOT_XMPP_HOST` The host name you want to connect to if its different than\n  what is in the username jid.\n* `HUBOT_XMPP_PORT` The port to connect to on the jabber server.\n* `HUBOT_XMPP_LEGACYSSL` Set to 1 to enable legacy SSL port.  This requires\n  the host to be defined.\n* `HUBOT_XMPP_PREFERRED_SASL_MECHANISM` Used to change the encoding used for SASL.\n* `HUBOT_XMPP_DISALLOW_TLS` Prevent upgrading the connection to a secure one via TLS.\n\n`HUBOT_XMPP_ROOMS` can be a comma separated list of rooms to join.  If\nyour rooms require passwords you should use the `jid:password` syntax.\nRoom passwords cannot contain `,`. Room names must be the full jid of the \nroom for example `dev@conference.jabber.example.org`.\n\n## Installation\n\nAfter installing `hubot` with npm, you should create a standalone bot:\n\n\thubot -c ./my-bot\n\nAfter creating your new bot, you should modify the `package.json` and add the\n`hubot-xmpp` dependency. After running `npm install` you should be ready to configure\nand start up your bot.\n\n## Group chat vs private JID\n\nThe jabber protocol does not broadcast real user JID in groupchat presence\nstanzas unless the server/chat room is configured to do so.\n\nIf you need to send private chat in response to a groupchat message, use\nhubot's send method with the groupchat jid and `envelope.user.type = 'direct'`.\nhubot-xmpp will then automatically resolve the JID to a private\nchat JID, and private message the sender.\n\nIf you need to get the private chat JID, you can use\n'msg.envelope.user.privateChatJid' where msg is the parameter of hubot's\n\"route\" callback.\n\nExample:\n\n```coffeescript\nrobot.respond /talk to me$/i, ( msg ) ->\n  # Simply reply\n  msg.reply \"Hello #{msg.envelope.user.name}. Your private JID is #{msg.envelope.user.privateChatJID}\"\n\nrobot.respond /talk to me in private$/i, ( msg ) ->\n  msg.envelope.user.type = 'direct'\n  msg.send \"Hey #{msg.envelope.user.name}! You told me in room #{msg.envelope.user.room} to talk to you.\"\n```\n",
+  "readmeFilename": "README.mdown",
+  "homepage": "https://github.com/markstory/hubot-xmpp",
+  "_id": "hubot-xmpp@0.1.10",
+  "dist": {
+    "shasum": "7386b3e937e10cb9499e2bfaf05932e06b6973aa"
+  },
+  "_from": "hubot-xmpp@0.1.10",
+  "_resolved": "https://registry.npmjs.org/hubot-xmpp/-/hubot-xmpp-0.1.10.tgz"
 }
