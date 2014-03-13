@@ -4,6 +4,7 @@ Xmpp = require 'node-xmpp'
 {Adapter,Robot,EnterMessage,LeaveMessage,TextMessage} = require 'hubot'
 
 assert = require 'assert'
+sinon  = require 'sinon'
 
 describe 'XmppBot', ->
   describe '#parseRooms()', ->
@@ -270,30 +271,26 @@ describe 'XmppBot', ->
       bot.topic envelope, 'one', 'two'
 
   describe '#error()', ->
-    restoreExit = null
-
     bot = Bot.use()
     bot.robot =
       logger:
         error: ->
 
     before () ->
-      restoreExit = process.exit
-      process.exit = () ->
-
-    after () ->
-      process.exit = restoreExit
+      bot.robot =
+        logger:
+          error: ->
 
     it 'should handle ECONNREFUSED', (done) ->
-      process.exit = ->
-        assert.ok 'exit was called'
+      bot.robot.logger.error = ->
+        assert.ok 'error logging happened.'
         done()
       error =
         code: 'ECONNREFUSED'
       bot.error error
 
     it 'should handle system-shutdown', (done) ->
-      process.exit = ->
+      bot.robot.logger.error = ->
         assert.ok 'exit was called'
         done()
       error =
@@ -774,5 +771,39 @@ describe 'XmppBot', ->
         onCalls.push(event)
       bot.configClient(options)
 
-      expected = ['error', 'online', 'stanza', 'offline']
+      expected = ['error', 'online', 'offline', 'stanza', 'end']
       assert.deepEqual onCalls, expected
+
+  describe '#reconnect', () ->
+    bot = clock = mock = null
+
+    beforeEach () ->
+      bot = Bot.use()
+      bot.robot =
+        logger:
+          error: sinon.stub()
+      clock = sinon.useFakeTimers()
+
+    afterEach () ->
+      clock.restore()
+      mock.restore() if mock
+
+    it 'should attempt a reconnect and increment retry count', (done) ->
+      bot.makeClient = () ->
+        assert.ok true, 'Attempted to make a new client'
+        done()
+
+      assert.equal 0, bot.reconnectTryCount
+      bot.reconnect()
+      assert.equal 1, bot.reconnectTryCount, 'No time elapsed'
+      clock.tick 2001
+
+    it 'should exit after 5 tries', () ->
+      mock = sinon.mock(process)
+      mock.expects('exit').once()
+
+      bot.reconnectTryCount = 5
+      bot.reconnect()
+
+      mock.verify()
+      assert.ok bot.robot.logger.error.called
