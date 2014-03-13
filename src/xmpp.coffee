@@ -5,6 +5,8 @@ util = require 'util'
 
 class XmppBot extends Adapter
 
+  reconnectTryCount: 0
+
   constructor: ( robot ) ->
     @robot = robot
 
@@ -35,6 +37,16 @@ class XmppBot extends Adapter
     @connected = false
     @makeClient()
 
+  # Only try to reconnect 5 times
+  reconnect: () ->
+    @reconnectTryCount += 1
+    if @reconnectTryCount > 5
+      @robot.logger.error 'Unable to reconnect to jabber server dying.'
+      process.exit 1
+    setTimeout () =>
+      @makeClient()
+    , 2000
+
   makeClient: () ->
     options = @options
 
@@ -47,6 +59,7 @@ class XmppBot extends Adapter
       legacySSL: options.legacySSL
       preferredSaslMechanism: options.preferredSaslMechanism
       disallowTLS: options.disallowTLS
+    @configClient(options)
 
     @robot.logger.debug 'jid is', @client.jid
 
@@ -63,11 +76,10 @@ class XmppBot extends Adapter
     @client.on 'online', @.online
     @client.on 'offline', @.offline
     @client.on 'stanza', @.read
+
     @client.on 'end', () =>
       @robot.logger.info 'Connection closed, attempting to reconnect'
-      setTimeout () =>
-        @makeClient()
-      , 2000
+      @reconnect()
 
   error: (error) =>
       @robot.logger.error "Received error #{error.toString()}"
@@ -100,6 +112,7 @@ class XmppBot extends Adapter
 
     @emit if @connected then 'reconnected' else 'connected'
     @connected = true
+    @reconnectTryCount = 0
 
   parseRooms: (items) ->
     rooms = []
