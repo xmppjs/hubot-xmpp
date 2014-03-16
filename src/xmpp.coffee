@@ -45,6 +45,11 @@ class XmppBot extends Adapter
     @connected = false
     @configClient(options)
 
+    # Expose the XMPP client through the robot to allow third-party scripts
+    # to send messages directly
+    @robot.xmppClient = @client
+    @robot.xmppRoster = []
+
   configClient: (options) ->
     @client.connection.socket.setTimeout 0
     @client.connection.socket.setKeepAlive true, options.keepaliveInterval
@@ -152,6 +157,14 @@ class XmppBot extends Adapter
 
       @robot.logger.debug "[sending pong] #{pong}"
       @client.send pong
+    # Keep a record of the client's primarty roster after connecting, so that
+    # scripts have the option of sending messages to all of the clients contacts
+    else (stanza.attrs.id == 'roster_1' && stanza.children[0]['children'])
+      roster_items = stanza.children[0]['children']
+
+      for item in roster_items
+        jid = new Xmpp.JID(item.attrs.jid)
+        @robot.xmppRoster.push(jid)
 
   readMessage: (stanza) =>
     # ignore non-messages
