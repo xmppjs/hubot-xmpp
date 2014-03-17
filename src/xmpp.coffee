@@ -45,9 +45,7 @@ class XmppBot extends Adapter
     @connected = false
     @configClient(options)
 
-    # Expose the XMPP client through the robot to allow third-party scripts
-    # to send messages directly
-    @robot.xmppClient = @client
+    # TODO this should just be on robot.adapter.client.roster
     @robot.xmppRoster = []
 
   configClient: (options) ->
