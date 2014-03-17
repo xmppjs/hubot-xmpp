@@ -40,7 +40,6 @@ class XmppBot extends Adapter
       legacySSL: options.legacySSL
       preferredSaslMechanism: options.preferredSaslMechanism
       disallowTLS: options.disallowTLS
-      roster: []
 
     @options = options
     @connected = false
@@ -158,9 +157,13 @@ class XmppBot extends Adapter
     else if (stanza.attrs.id == 'roster_1' && stanza.children[0]['children'])
       roster_items = stanza.children[0]['children']
       
+      @client.roster = []
+      
       for item in roster_items
         jid = new Xmpp.JID(item.attrs.jid)
         @client.roster.push(jid)
+        
+      @robot.logger.info "roster #{@client.roster}"
 
   readMessage: (stanza) =>
     # ignore non-messages
