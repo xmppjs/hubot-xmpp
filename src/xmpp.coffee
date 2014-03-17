@@ -139,7 +139,7 @@ class XmppBot extends Adapter
         @readIq stanza
 
   readIq: (stanza) =>
-    @robot.logger.debug "[received iq] #{stanza}"
+    @robot.logger.info "[received iq] #{stanza}"
 
     # Some servers use iq pings to make sure the client is still functional.
     # We need to reply or we'll get kicked out of rooms we've joined.
