@@ -27,6 +27,7 @@ class XmppBot extends Adapter
       legacySSL: process.env.HUBOT_XMPP_LEGACYSSL
       preferredSaslMechanism: process.env.HUBOT_XMPP_PREFERRED_SASL_MECHANISM
       disallowTLS: process.env.HUBOT_XMPP_DISALLOW_TLS
+      roster: process.env.HUBOT_XMPP_CLIENT_ROSTER
 
     @robot.logger.info util.inspect(options)
     options.password = process.env.HUBOT_XMPP_PASSWORD
@@ -81,10 +82,11 @@ class XmppBot extends Adapter
     @client.send presence
     @robot.logger.info 'Hubot XMPP sent initial presence'
 
-    # Request client roster
-    @client.send do =>
-      el = new Xmpp.Element('iq', from: @options.username, type: 'get', id: 'roster_1')
-      q = el.c('query', xmlns: 'jabber:iq:roster')
+    # Request client roster if enabled
+    if @options.roster
+      @client.send do =>
+        el = new Xmpp.Element('iq', from: @options.username, type: 'get', id: 'roster_1')
+        q = el.c('query', xmlns: 'jabber:iq:roster')
 
     @joinRoom room for room in @options.rooms
 
@@ -161,13 +163,14 @@ class XmppBot extends Adapter
     # scripts have the option of sending messages to all of the clients contacts
     else if (stanza.attrs.id == 'roster_1' && stanza.children[0]['children'])
       roster_items = stanza.children[0]['children']
-      
+
       @client.roster = []
       
+
       for item in roster_items
         jid = new Xmpp.JID(item.attrs.jid)
         @client.roster.push(jid)
-        
+
       @robot.logger.debug "[setting roster] #{@client.roster}"
 
   readMessage: (stanza) =>
