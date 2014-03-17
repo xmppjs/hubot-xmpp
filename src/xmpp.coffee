@@ -40,6 +40,7 @@ class XmppBot extends Adapter
       legacySSL: options.legacySSL
       preferredSaslMechanism: options.preferredSaslMechanism
       disallowTLS: options.disallowTLS
+      roster: []
 
     @options = options
     @connected = false
@@ -162,6 +163,7 @@ class XmppBot extends Adapter
 
       for item in roster_items
         jid = new Xmpp.JID(item.attrs.jid)
+        @client.roster.push(jid)
         @robot.xmppRoster.push(jid)
 
   readMessage: (stanza) =>
