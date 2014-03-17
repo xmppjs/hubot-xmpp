@@ -81,6 +81,11 @@ class XmppBot extends Adapter
     @client.send presence
     @robot.logger.info 'Hubot XMPP sent initial presence'
 
+    # Request client roster
+    @client.send do =>
+      el = new Xmpp.Element('iq', from: @options.username, type: 'get', id: 'roster_1')
+      q = el.c('query', xmlns: 'jabber:iq:roster')
+
     @joinRoom room for room in @options.rooms
 
     @emit if @connected then 'reconnected' else 'connected'
