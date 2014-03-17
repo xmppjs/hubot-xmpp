@@ -158,7 +158,7 @@ class XmppBot extends Adapter
       @client.send pong
     # Keep a record of the client's primarty roster after connecting, so that
     # scripts have the option of sending messages to all of the clients contacts
-    else (stanza.attrs.id == 'roster_1' && stanza.children[0]['children'])
+    else if (stanza.attrs.id == 'roster_1' && stanza.children[0]['children'])
       roster_items = stanza.children[0]['children']
 
       for item in roster_items
