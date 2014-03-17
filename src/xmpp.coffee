@@ -165,7 +165,6 @@ class XmppBot extends Adapter
       roster_items = stanza.children[0]['children']
 
       @client.roster = []
-      
 
       for item in roster_items
         jid = new Xmpp.JID(item.attrs.jid)
