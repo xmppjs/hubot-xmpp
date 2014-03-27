@@ -5,6 +5,8 @@ util = require 'util'
 
 class XmppBot extends Adapter
 
+  reconnectTryCount: 0
+
   constructor: ( robot ) ->
     @robot = robot
 
@@ -31,6 +33,29 @@ class XmppBot extends Adapter
     @robot.logger.info util.inspect(options)
     options.password = process.env.HUBOT_XMPP_PASSWORD
 
+    @options = options
+    @connected = false
+    @makeClient()
+
+  # Only try to reconnect 5 times
+  reconnect: () ->
+    @reconnectTryCount += 1
+    if @reconnectTryCount > 5
+      @robot.logger.error 'Unable to reconnect to jabber server dying.'
+      process.exit 1
+
+    @client.removeListener 'error', @.error
+    @client.removeListener 'online', @.online
+    @client.removeListener 'offline', @.offline
+    @client.removeListener 'stanza', @.read
+
+    setTimeout () =>
+      @makeClient()
+    , 5000
+
+  makeClient: () ->
+    options = @options
+
     @client = new Xmpp.Client
       reconnect: true
       jid: options.username
@@ -40,9 +65,6 @@ class XmppBot extends Adapter
       legacySSL: options.legacySSL
       preferredSaslMechanism: options.preferredSaslMechanism
       disallowTLS: options.disallowTLS
-
-    @options = options
-    @connected = false
     @configClient(options)
 
   configClient: (options) ->
@@ -51,23 +73,15 @@ class XmppBot extends Adapter
 
     @client.on 'error', @.error
     @client.on 'online', @.online
-    @client.on 'stanza', @.read
     @client.on 'offline', @.offline
+    @client.on 'stanza', @.read
+
+    @client.on 'end', () =>
+      @robot.logger.info 'Connection closed, attempting to reconnect'
+      @reconnect()
 
   error: (error) =>
-    if error.code == "ECONNREFUSED"
-      @robot.logger.error "Connection refused, exiting"
-      setTimeout () ->
-        process.exit(1)
-      , 1500
-    else if error.children?[0]?.name == "system-shutdown"
-      @robot.logger.error "Server shutdown detected, exiting"
-      setTimeout () ->
-        process.exit(1)
-      , 1500
-    else
-      @robot.logger.error error.toString()
-      console.log util.inspect(error.children?[0]?.name, { showHidden: true, depth: 1 })
+      @robot.logger.error "Received error #{error.toString()}"
 
   online: =>
     @robot.logger.info 'Hubot XMPP client online'
@@ -85,6 +99,7 @@ class XmppBot extends Adapter
 
     @emit if @connected then 'reconnected' else 'connected'
     @connected = true
+    @reconnectTryCount = 0
 
   parseRooms: (items) ->
     rooms = []
