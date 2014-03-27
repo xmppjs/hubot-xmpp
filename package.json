@@ -1,16 +1,22 @@
 {
   "name": "hubot-xmpp",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "author": {
     "name": "Mark Story",
     "email": "mark@mark-story.com",
     "url": "http://mark-story.com"
   },
   "description": "XMPP adapter for Hubot.",
-  "keywords": ["hubot", "xmpp", "adapter"],
-  "licenses": [{
-    "type": "MIT"
-  }],
+  "keywords": [
+    "hubot",
+    "xmpp",
+    "adapter"
+  ],
+  "licenses": [
+    {
+      "type": "MIT"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/markstory/hubot-xmpp.git"
@@ -24,7 +30,9 @@
   "main": "./src/xmpp",
   "engine": "node > 0.6.0 < 0.8.0",
   "dependencies": {
-    "node-xmpp": "0.15.0"
+    "node-xmpp-client": "~0.4.0",
+    "ltx": "~0.4.1",
+    "node-xmpp-core": "~0.5.0"
   },
   "devDependencies": {
     "coffee-script": "1.1.3",
