@@ -1,5 +1,6 @@
 Bot = require '../src/xmpp'
-Xmpp = require 'node-xmpp'
+XmppClient = require 'node-xmpp-client'
+ltx = require 'ltx'
 
 {Adapter,Robot,EnterMessage,LeaveMessage,TextMessage} = require 'hubot'
 
@@ -575,14 +576,14 @@ describe 'XmppBot', ->
 
       bot.send envelope, 'testing'
 
-    it 'should accept Xmpp.Element objects as messages', (done) ->
+    it 'should accept ltx.Element objects as messages', (done) ->
       envelope =
         user:
           name: 'mark'
           type: 'groupchat'
         room: 'test@example.com'
 
-      el = new Xmpp.Element('message').c('body')
+      el = new ltx.Element('message').c('body')
         .t('testing')
 
       bot.client.send = (msg) ->

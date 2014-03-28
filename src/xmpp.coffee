@@ -1,6 +1,8 @@
 {Adapter,Robot,TextMessage,EnterMessage,LeaveMessage} = require 'hubot'
 
-Xmpp = require 'node-xmpp'
+XmppClient = require 'node-xmpp-client'
+JID = require('node-xmpp-core').JID
+ltx = require 'ltx'
 util = require 'util'
 
 class XmppBot extends Adapter
@@ -56,7 +58,7 @@ class XmppBot extends Adapter
   makeClient: () ->
     options = @options
 
-    @client = new Xmpp.Client
+    @client = new XmppClient
       reconnect: true
       jid: options.username
       password: options.password
@@ -90,7 +92,7 @@ class XmppBot extends Adapter
     @client.connection.socket.setTimeout 0
     @client.connection.socket.setKeepAlive true, @options.keepaliveInterval
 
-    presence = new Xmpp.Element 'presence'
+    presence = new ltx.Element 'presence'
     presence.c('nick', xmlns: 'http://jabber.org/protocol/nick').t(@robot.name)
     @client.send presence
     @robot.logger.info 'Hubot XMPP sent initial presence'
@@ -118,7 +120,7 @@ class XmppBot extends Adapter
       # prevent the server from confusing us with old messages
       # and it seems that servers don't reliably support maxchars
       # or zero values
-      el = new Xmpp.Element('presence', to: "#{room.jid}/#{@robot.name}")
+      el = new ltx.Element('presence', to: "#{room.jid}/#{@robot.name}")
       x = el.c('x', xmlns: 'http://jabber.org/protocol/muc')
       x.c('history', seconds: 1 )
 
@@ -136,7 +138,7 @@ class XmppBot extends Adapter
     @client.send do =>
       @robot.logger.debug "Leaving #{room.jid}/#{@robot.name}"
 
-      return new Xmpp.Element('presence',
+      return new ltx.Element('presence',
         to: "#{room.jid}/#{@robot.name}",
         type: 'unavailable')
 
@@ -159,7 +161,7 @@ class XmppBot extends Adapter
     # Some servers use iq pings to make sure the client is still functional.
     # We need to reply or we'll get kicked out of rooms we've joined.
     if (stanza.attrs.type == 'get' && stanza.children[0].name == 'ping')
-      pong = new Xmpp.Element('iq',
+      pong = new ltx.Element('iq',
         to: stanza.attrs.from
         from: stanza.attrs.to
         type: 'result'
@@ -216,7 +218,7 @@ class XmppBot extends Adapter
     @receive new TextMessage(user, message)
 
   readPresence: (stanza) =>
-    fromJID = new Xmpp.JID(stanza.attrs.from)
+    fromJID = new JID(stanza.attrs.from)
 
     # xmpp doesn't add types for standard available mesages
     # note that upon joining a room, server will send available
@@ -228,7 +230,7 @@ class XmppBot extends Adapter
       when 'subscribe'
         @robot.logger.debug "#{stanza.attrs.from} subscribed to me"
 
-        @client.send new Xmpp.Element('presence',
+        @client.send new ltx.Element('presence',
             from: stanza.attrs.to
             to:   stanza.attrs.from
             id:   stanza.attrs.id
@@ -237,7 +239,7 @@ class XmppBot extends Adapter
       when 'probe'
         @robot.logger.debug "#{stanza.attrs.from} probed me"
 
-        @client.send new Xmpp.Element('presence',
+        @client.send new ltx.Element('presence',
             from: stanza.attrs.to
             to:   stanza.attrs.from
             id:   stanza.attrs.id
@@ -291,10 +293,10 @@ class XmppBot extends Adapter
         @receive new LeaveMessage(user)
 
   # Accept a stanza from a group chat
-  # return privateJID (instanceof Xmpp.JID) or the
+  # return privateJID (instanceof JID) or the
   # http://jabber.org/protocol/muc#user extension was not provided
   resolvePrivateJID: ( stanza ) ->
-    jid = new Xmpp.JID(stanza.attrs.from)
+    jid = new JID(stanza.attrs.from)
 
     # room presence in group chat uses a jid which is not the real user jid
     # To send private message to a user seen in a groupchat,
@@ -309,7 +311,7 @@ class XmppBot extends Adapter
         @anonymousGroupChatWarningLogged = true
       return null
 
-    return new Xmpp.JID(privateJID)
+    return new JID(privateJID)
 
   # Checks that the room parameter is a room the bot is in.
   messageFromRoom: (room) ->
@@ -334,20 +336,20 @@ class XmppBot extends Adapter
         to: to
         type: envelope.user?.type or 'groupchat'
 
-      # Xmpp.Element type
+      # ltx.Element type
       if msg.attrs?
         message = msg.root()
         message.attrs.to ?= params.to
         message.attrs.type ?= params.type
       else
-        message = new Xmpp.Element('message', params).
+        message = new ltx.Element('message', params).
                   c('body').t(msg)
 
       @client.send message
 
   reply: (envelope, messages...) ->
     for msg in messages
-      # Xmpp.Element?
+      # ltx.Element?
       if msg.attrs?
         @send envelope, msg
       else
@@ -356,7 +358,7 @@ class XmppBot extends Adapter
   topic: (envelope, strings...) ->
     string = strings.join "\n"
 
-    message = new Xmpp.Element('message',
+    message = new ltx.Element('message',
                 to: envelope.room
                 type: envelope.user.type
               ).
