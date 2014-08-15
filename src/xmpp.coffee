@@ -267,7 +267,7 @@ class XmppBot extends Adapter
         @robot.logger.debug "Available received from #{fromJID.toString()} in room #{room} and private chat jid is #{privateChatJID?.toString()}"
 
         # Use the resource part from the room jid as this
-        # is more likelly the user's name
+        # is most likely the user's name
         user = @robot.brain.userForId(fromJID.resource,
           room: room,
           jid: fromJID.toString(),
