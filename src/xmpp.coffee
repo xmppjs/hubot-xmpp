@@ -142,6 +142,39 @@ class XmppBot extends Adapter
         to: "#{room.jid}/#{@robot.name}",
         type: 'unavailable')
 
+  # XMPP invite to a room, directly - http://xmpp.org/extensions/xep-0249.html
+  sendInvite: (room, invitee, message) ->
+    @client.send do =>
+      @robot.logger.debug "Inviting #{invitee} to #{room.jid}"
+      mes = new ltx.Element('message',
+        to : invitee)
+      mes.c('x',
+        xmlns : 'jabber:x:conference',
+        jid: room.jid,
+        reason: message)
+      return mes
+
+  # XMPP Create a room - http://xmpp.org/extensions/xep-0045.html#createroom-instant
+  createRoom: (room) ->
+    @client.send do =>
+      @robot.logger.debug "Sending presence for creation of room: #{room.jid}"
+      pres = new ltx.Element('presence',
+        from: @robot.name
+        to: "#{room.jid}/#{@robot.name}")
+      pres.c('x', {'xmlns': 'http://jabber.org/protocol/muc'})
+      .c('history', seconds: 1 )
+      return pres
+
+    @client.send do =>
+      @robot.logger.debug "Sending iq for creation of room: #{room.jid}"
+      iq = new ltx.Element('iq',
+        to: "#{room.jid}"
+        type: 'set')
+      .c('query', { 'xmlns': 'http://jabber.org/protocol/muc#owner' })
+      .c('x', { 'xmlns': 'jabber:x:data', type: 'submit'})
+      .c('history', seconds: 1 )
+      return iq
+
   read: (stanza) =>
     if stanza.attrs.type is 'error'
       @robot.logger.error '[xmpp error]' + stanza
