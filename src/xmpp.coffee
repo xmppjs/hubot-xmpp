@@ -72,6 +72,7 @@ class XmppBot extends Adapter
   configClient: (options) ->
     @client.connection.socket.setTimeout 0
     @client.connection.socket.setKeepAlive true, options.keepaliveInterval
+    setInterval(@ping, options.keepaliveInterval)
 
     @client.on 'error', @.error
     @client.on 'online', @.online
@@ -102,6 +103,13 @@ class XmppBot extends Adapter
     @emit if @connected then 'reconnected' else 'connected'
     @connected = true
     @reconnectTryCount = 0
+
+  ping: =>
+    ping = new ltx.Element('iq', type: 'get')
+    ping.c('ping', xmlns: 'urn:xmpp:ping')
+
+    @robot.logger.debug "[sending ping] #{ping}"
+    @client.send ping
 
   parseRooms: (items) ->
     rooms = []
