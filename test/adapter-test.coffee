@@ -69,6 +69,30 @@ describe 'XmppBot', ->
           done()
         bot.joinRoom protectedRoom
 
+  describe '#ping()', ->
+    bot = Bot.use()
+    bot.client =
+      stub: 'xmpp client'
+
+    room =
+      jid: 'test@example.com'
+      password: false
+
+    beforeEach ->
+      bot.options =
+        rooms: [room]
+      bot.robot =
+        name: 'bot'
+        logger:
+          debug: () ->
+
+    it 'should call @client.send() with a proper ping element', (done) ->
+      bot.client.send = (message) ->
+        assert.equal message.name, 'iq'
+        assert.equal message.attrs.type, 'get'
+        done()
+      bot.ping()
+
   describe '#leaveRoom()', ->
     bot = Bot.use()
     bot.client =
