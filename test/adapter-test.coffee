@@ -768,10 +768,12 @@ describe 'XmppBot', ->
 
   describe '#configClient', ->
     bot = null
+    clock = null
     options =
       keepaliveInterval: 30000
 
     beforeEach () ->
+      clock = sinon.useFakeTimers()
       bot = Bot.use()
       bot.client =
         connection:
@@ -779,17 +781,21 @@ describe 'XmppBot', ->
         on: ->
         send: ->
 
+    afterEach () ->
+      clock.restore()
+
     it 'should set timeouts', () ->
       bot.client.connection.socket.setTimeout = (val) ->
         assert.equal 0, val, 'Should be 0'
-      bot.client.connection.socket.setKeepAlive = (mode, duration) ->
-        assert.ok mode, 'Should turn keepalive on'
-        assert.equal options.keepaliveInterval, duration
+      bot.ping = sinon.stub()
+
       bot.configClient(options)
+
+      clock.tick(options.keepaliveInterval)
+      assert(bot.ping.called)
 
     it 'should set event listeners', () ->
       bot.client.connection.socket.setTimeout = ->
-      bot.client.connection.socket.setKeepAlive = ->
 
       onCalls = []
       bot.client.on = (event, cb) ->

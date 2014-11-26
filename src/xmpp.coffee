@@ -78,7 +78,6 @@ class XmppBot extends Adapter
 
   configClient: (options) ->
     @client.connection.socket.setTimeout 0
-    @client.connection.socket.setKeepAlive true, options.keepaliveInterval
     setInterval(@ping, options.keepaliveInterval)
 
     @client.on 'error', @.error
