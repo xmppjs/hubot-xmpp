@@ -375,8 +375,16 @@ class XmppBot extends Adapter
         message.attrs.to ?= params.to
         message.attrs.type ?= params.type
       else
-        message = new ltx.Element('message', params).
-                  c('body').t(msg)
+        parsedMsg = try new ltx.parse(msg)
+        bodyMsg   = new ltx.Element('message', params).
+                    c('body').t(msg)
+        message   = if parsedMsg?
+                      bodyMsg.up().
+                      c('html',{xmlns:'http://jabber.org/protocol/xhtml-im'}).
+                      c('body',{xmlns:'http://www.w3.org/1999/xhtml'}).
+                      cnode(parsedMsg)
+                    else
+                      bodyMsg
 
       @client.send message
 
