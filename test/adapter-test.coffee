@@ -618,6 +618,30 @@ describe 'XmppBot', ->
 
       bot.send envelope, el
 
+    it 'should send XHTML messages to the room', (done) ->
+      envelope =
+        user:
+          name: 'mark'
+          type: 'groupchat'
+        room: 'test@example.com'
+
+      bot.client.send = (msg) ->
+        assert.equal msg.root().attrs.to, 'test@example.com'
+        assert.equal msg.root().attrs.type, 'groupchat'
+        assert.equal msg.root().children[0].getText(), "<p><span style='color: #0000ff;'>testing</span></p>"
+        assert.equal msg.parent.parent.name, 'html'
+        assert.equal msg.parent.parent.attrs.xmlns, 'http://jabber.org/protocol/xhtml-im'
+        assert.equal msg.parent.name, 'body'
+        assert.equal msg.parent.attrs.xmlns, 'http://www.w3.org/1999/xhtml'
+        assert.equal msg.name, 'p'
+        assert.equal msg.children[0].name, 'span'
+        assert.equal msg.children[0].attrs.style, 'color: #0000ff;'
+        assert.equal msg.children[0].getText(), 'testing'
+
+        done()
+
+      bot.send envelope, "<p><span style='color: #0000ff;'>testing</span></p>"
+
   describe '#online', () ->
     bot = null
     beforeEach () ->
