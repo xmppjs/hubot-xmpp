@@ -279,7 +279,8 @@ class XmppBot extends Adapter
         )
       when 'available'
         # If the presence is from us, track that.
-        if fromJID.resource == @robot.name
+        if fromJID.resource is @robot.name or
+           stanza.getChild?('nick')?.getText?() is @robot.name
           @heardOwnPresence = true
           return
 
@@ -415,4 +416,3 @@ class XmppBot extends Adapter
 
 exports.use = (robot) ->
   new XmppBot robot
-
