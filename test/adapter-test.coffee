@@ -438,7 +438,7 @@ describe 'XmppBot', ->
       bot.readPresence stanza
 
     it 'should set @heardOwnPresence when the bot presence is received', () ->
-      stanza =
+      stanza1 =
         attrs:
           type: 'available'
           to: 'bot@example.com'
@@ -450,7 +450,20 @@ describe 'XmppBot', ->
                 attrs:
                   jid: 'bot@example.com'
 
-      bot.readPresence stanza
+      stanza2 =
+        attrs:
+          type: 'available'
+          to: 'bot@example.com'
+          from: 'test@example.com/2578936351142164331380805'
+        getChild: ->
+          stub =
+            getText: ->
+              stub = 'bot'
+
+      bot.readPresence stanza1
+      assert.ok bot.heardOwnPresence
+      bot.heardOwnPresence = false
+      bot.readPresence stanza2
       assert.ok bot.heardOwnPresence
 
     # Don't trigger enter messages in a room, until we get our
