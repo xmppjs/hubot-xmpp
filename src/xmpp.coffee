@@ -342,6 +342,7 @@ class XmppBot extends Adapter
         # message, envelope.user.privateChatJID will be
         # set to the JID from that private message
         to: to
+        id: Math.random().toString(32).slice(2)
         type: envelope.user?.type or 'groupchat'
 
       # ltx.Element type
