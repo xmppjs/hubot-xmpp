@@ -1,15 +1,10 @@
 {
-  "name": "hubot-xmpp",
-  "version": "0.1.14",
-  "author": {
-    "name": "Mark Story",
-    "email": "mark@mark-story.com",
-    "url": "http://mark-story.com"
-  },
-  "description": "XMPP adapter for Hubot.",
+  "name": "hubot-purecloud",
+  "version": "0.0.1",
+  "description": "Purecloud adapter for Hubot",
   "keywords": [
     "hubot",
-    "xmpp",
+    "Purecloud",
     "adapter"
   ],
   "licenses": [
@@ -19,20 +14,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/markstory/hubot-xmpp.git"
+    "url": "git://github.com/rbrcurtis/hubot-purecloud.git"
   },
-  "bugs": {
-    "url": "http://github.com/markstory/hubot-xmpp/issues"
-  },
-  "scripts": {
-    "test": "make test"
-  },
-  "main": "./src/xmpp",
-  "engine": "node > 0.6.0 < 0.8.0",
+  "main": "./src/index",
   "dependencies": {
-    "node-xmpp-client": "0.4.x",
-    "ltx": "0.4.x",
-    "node-xmpp-core": "0.5.x"
+    "node-xmpp-client": "^1.0.0-alpha20",
+    "uuid": "^2.0.1"
   },
   "devDependencies": {
     "coffee-script": "1.1.3",
