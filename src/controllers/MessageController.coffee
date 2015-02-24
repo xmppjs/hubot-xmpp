@@ -1,4 +1,3 @@
-uuid = require 'uuid'
 
 Controller = require './framework/Controller.coffee'
 
@@ -27,15 +26,12 @@ module.exports = class MessageController extends Controller
 			@realtime.debug 'message', 'sending', to, body
 
 			id = uuid.generate()
-			[formatted, links] = formatter.formatBody body
 			message = {
 				id, 
 				from: @realtime.jid.bare().toString(), 
 				to, 
-				body: formatted, 
-				links, 
+				body: body, 
 				time: new Date(), 
-				raw: body,
 				pending: true
 			}
 			@emit 'message', message
@@ -49,8 +45,6 @@ module.exports = class MessageController extends Controller
 			@_pending[id] = true
 			
 			@realtime.send stanza
-
-			if @realtime._controllers.activeChatController.active then @realtime.takeFocus()
 
 			@once "carbon:#{id}", (err)-> 
 				delete message.pending
@@ -185,13 +179,13 @@ module.exports = class MessageController extends Controller
 		#
 		id = if from is @realtime.jid.bare().toString() and stanza.attrs.oid then stanza.attrs.oid else stanza.attrs.id
 
-		[body, links] = formatter.formatBody raw = stanza.getChild('body')?.text()
+		body = stanza.getChild('body')?.text()
 		# raw = _.str.escapeHTML(raw)
 
 		if not stanza.attrs.utc then @realtime.debug 'message', 'message without timestamp', stanza.toString()
 
 		# if we havent already gotten history for this key then don't add this message until that has happened.
-		message = {id, from, to, body, links, time:new Date(stanza.attrs.utc or Date.now()), type:messageType, raw}
+		message = {id, from, to, body, time:new Date(stanza.attrs.utc or Date.now()), type:messageType}
 		@_messages[key]?[id] = message
 
 		if @_pending[stanza.attrs.oid]
@@ -232,16 +226,13 @@ module.exports = class MessageController extends Controller
 			# TODO: instead of changing the ID here, we should emit the ID correctly on send
 			id = if child.attrs.from == myjid and child.attrs.oid then child.attrs.oid else child.attrs.id
 
-			[body, links] = formatter.formatBody raw = child.getChild('body').text()
-			# raw = _.str.escapeHTML(raw)
+			body = child.getChild('body').text()
 
 			message = 
 				id:    id
 				from:  child.attrs.from
 				to:    child.attrs.to
 				body:  body
-				raw:   raw
-				links: links
 				time:  new Date(child.attrs.utc)
 
 			_messages[id] = message

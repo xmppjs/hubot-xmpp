@@ -1,4 +1,3 @@
-uuid = require 'uuid'
 
 Controller = require './framework/Controller.coffee'
 
@@ -58,7 +57,7 @@ module.exports = class GroupController extends Controller
 				{name, jid} = item.attrs
 				@groups[item.attrs.jid] = {name:item.attrs.name, jid:item.attrs.jid}
 
-				@realtime._controllers.roomController._joinRoom item.attrs.jid
+				@realtime.joinRoom item.attrs.jid
 
 				@emit 'rosterItem', {name, jid, section:'groups', type:'room', event:'add'}
 			else
