@@ -174,4 +174,5 @@ module.exports = class RoomController extends Controller
     stanza = new ltx.Element 'presence', from:@realtime.jid.toString(), to:"#{roomJid}/#{@_nick}", id:uuid.generate()
     stanza.c 'x', xmlns:'http://jabber.org/protocol/muc'
     @realtime.send stanza
+    @realtime.sendMessage roomJid, 'Hello!'
 

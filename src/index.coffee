@@ -173,6 +173,7 @@ class PurecloudBot extends Adapter
 
   _onMessage: (msg) =>
     if msg.from is @options.username then return
+    if msg.body?.match /nsfw/ then return
 
     if msg.body?.match(/^hubot leave$/) and msg.to?.match(/@conference/)
       @realtime.sendMessage msg.to, 'Goodbye!'
