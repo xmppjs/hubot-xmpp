@@ -1,7 +1,5 @@
 {User,Adapter,Robot,TextMessage,EnterMessage,LeaveMessage} = require 'hubot'
 
-require 'colors'
-
 fs = require 'fs'
 util = require 'util'
 {EventEmitter} = require 'events'
@@ -24,7 +22,7 @@ class Realtime extends EventEmitter
     constructor: (@client) ->
     
     send: (stanza) ->
-      debug 'stanza', 'out'.yellow, stanza.toString()
+      debug 'stanza', 'out', stanza.toString()
       @client.send stanza
     
     jid: null
@@ -139,7 +137,7 @@ class PurecloudBot extends Adapter
       @emit 'connected'
 
   onStanza: (stanza) =>
-    debug 'stanza', 'in'.yellow, stanza.toString()
+    debug 'stanza', 'in', stanza.toString()
 
     handled = false
 
