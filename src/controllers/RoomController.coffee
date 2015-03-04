@@ -125,6 +125,7 @@ module.exports = class RoomController extends Controller
     room = if stanza.getChild('x','http://jabber.org/protocol/muc#user')?.getChild('invite')? then stanza.attrs.to else stanza.getChild('x', 'jabber:x:conference').attrs.jid
 
     @_joinRoom room
+    @realtime.sendMessage room, 'Hello!'
 
   handleData: (stanza) ->
     @realtime.debug 'data', 'handleData', stanza.toString()
