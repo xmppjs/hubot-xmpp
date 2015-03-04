@@ -157,7 +157,7 @@ class PurecloudBot extends Adapter
 
   send: (envelope, messages...) ->
     log 'robot', 'send', arguments...
-    return
+
     for msg in messages
       unless msg then continue
       @robot.logger.debug "Sending to #{envelope.room or envelope.user?.id}: #{msg}"
