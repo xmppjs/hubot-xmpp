@@ -15,7 +15,7 @@ config = require(process.cwd() + "/config")
 
 global.logError = => @robot.logger.error arguments...
 global.log = => console.log arguments...
-global.debug = => # @robot.logger.info arguments...
+global.debug = => @robot.logger.info arguments...
 
 class Realtime extends EventEmitter
 
@@ -72,11 +72,12 @@ class PurecloudBot extends Adapter
           do (funcName, func) =>
             @realtime[funcName] = (args...) =>
               apply = =>
-                debug 'handle', 'executing', funcName, _.omit @controllers[name], 'realtime', 'client'
                 func.apply @controllers[name], args
               unless @realtime.connected
                 debug 'handle', 'deferring call to', funcName, @realtime.connected
-                return @realtime.once 'connect', => apply()
+                return @realtime.once 'connect', => 
+                  debug 'handle', 'defer resolve', funcName
+                  apply()
               else apply()
 
             null
@@ -129,12 +130,12 @@ class PurecloudBot extends Adapter
     @client
 
   onConnect: ({jid}) => 
-    log 'online', jid.toString(), jid.bare().toString()
+    log '***************** online', jid.toString(), jid.bare().toString()
     @realtime.jid = jid
-    @realtime.emit 'connect'
     unless @realtime.connected
       @realtime.connected = true
       @emit 'connected'
+    @realtime.emit 'connect'
 
   onStanza: (stanza) =>
     debug 'stanza', 'in', stanza.toString()
@@ -156,6 +157,7 @@ class PurecloudBot extends Adapter
 
   send: (envelope, messages...) ->
     log 'robot', 'send', arguments...
+    return
     for msg in messages
       unless msg then continue
       @robot.logger.debug "Sending to #{envelope.room or envelope.user?.id}: #{msg}"

@@ -21,8 +21,9 @@ module.exports = class RoomController extends Controller
       roomJid = roomJid.toString().split('@')[0]+'@conference.'+@realtime.jid.domain
       @realtime.debug 'room', 'joining', roomJid
       @_joinRoom roomJid
-      if typeof callback is 'function'
-        @once 'join:'+roomJid.split('@')[0], callback
+      @once 'join:'+roomJid.split('@')[0], =>
+        # @realtime.sendMessage roomJid, 'Hello!'
+        if typeof callback is 'function' then callback()
 
     leaveRoom: (roomJid) ->
       unless roomJid then return console?.error('leaveRoom called with no jid.')
@@ -44,8 +45,6 @@ module.exports = class RoomController extends Controller
         @emit 'subjectChange', {room:roomJid, subject}
         callback()
       ), 500
-
-      
 
     getRoomInfo: (roomJid, callback) ->
       roomJid = roomJid.toString().split('@')[0]+'@conference.'+@realtime.jid.domain
@@ -157,16 +156,22 @@ module.exports = class RoomController extends Controller
     @emit 'occupantChange', {room, from, type}
 
     if from is to
-      @handleJoinRoomConfirmation stanza
+      @_handleJoinRoomConfirmation stanza
 
-  handleJoinRoomConfirmation: (stanza)->
+  _handleJoinRoomConfirmation: (stanza)->
     [room] = stanza.attrs.from.split('/')
 
-    if @_occupants[room] and @_pendingOccupants[room]
-      for from of @_occupants[room]
-        unless @_pendingOccupants[room][from]
-          @emit 'occupantChange', {room, from, type: 'leave'}
-      @_occupants[room] = @_pendingOccupants[room]
+    debug 'room', 'join room confirmation'
+    @realtime.getActiveChats (err, actives) => 
+      if actives and !actives[room]
+        debug 'room', "I'm not even supposed to be here today!", room, actives
+        @realtime.leaveRoom room
+      else 
+        if @_occupants[room] and @_pendingOccupants[room]
+          for from of @_occupants[room]
+            unless @_pendingOccupants[room][from]
+              @emit 'occupantChange', {room, from, type: 'leave'}
+          @_occupants[room] = @_pendingOccupants[room]
 
   _joinRoom: (roomJid) ->
     if @_rooms[roomJid] then return
@@ -174,5 +179,4 @@ module.exports = class RoomController extends Controller
     stanza = new ltx.Element 'presence', from:@realtime.jid.toString(), to:"#{roomJid}/#{@_nick}", id:uuid.generate()
     stanza.c 'x', xmlns:'http://jabber.org/protocol/muc'
     @realtime.send stanza
-    @realtime.sendMessage roomJid, 'Hello!'
 

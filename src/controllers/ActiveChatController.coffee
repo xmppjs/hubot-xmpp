@@ -5,7 +5,6 @@ module.exports = class ActiveChatController extends Controller
 
   @expose:
     setActive: (jid) ->
-      unless @active then return
       if not @_actives
         @_updateQueue.push ActiveChatController.expose.setActive.bind @, jid
         return
@@ -22,7 +21,6 @@ module.exports = class ActiveChatController extends Controller
 
 
     setInactive: (jid) ->
-      unless @active then return
       if not @_actives
         @_updateQueue.push ActiveChatController.expose.setInactive.bind @, jid
         return
@@ -38,12 +36,11 @@ module.exports = class ActiveChatController extends Controller
       @realtime.send stanza
 
     getActiveChats: (callback) ->
-      @realtime.debug 'active', 'getActiveChats called', @active
+      @realtime.debug 'active', 'getActiveChats called'
       if @_actives then return callback null, @_actives
-      unless @active
-        @active = true
-        @realtime.features['orgspan:activeChats'] = true
-        @_sendRequest()
+
+      @realtime.features['orgspan:activeChats'] = true
+      @_sendRequest()
 
       @realtime.debug 'active', 'waiting for _actives'
       @once 'actives', =>
