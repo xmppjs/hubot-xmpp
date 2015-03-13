@@ -42,7 +42,7 @@ class XmppBot extends Adapter
   # Only try to reconnect 5 times
   reconnect: () ->
     @reconnectTryCount += 1
-    if @reconnectTryCount > 5
+    if @reconnectTryCount > 100
       @robot.logger.error 'Unable to reconnect to jabber server dying.'
       process.exit 1
 
@@ -53,7 +53,7 @@ class XmppBot extends Adapter
 
     setTimeout () =>
       @makeClient()
-    , 5000
+    , 10000
 
   makeClient: () ->
     options = @options
