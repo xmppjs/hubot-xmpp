@@ -41,7 +41,7 @@ module.exports = class GroupController extends Controller
 			{name, jid} = item.attrs
 			@groups[item.attrs.jid] = item.attrs
 
-			if item.attrs.autojoin then _.throttle(@realtime.joinRoom(item.attrs.jid), 1000)
+			if item.attrs.autojoin then @realtime.joinRoom item.attrs.jid
 
 			@emit 'rosterItem', {name, jid, section:'groups', type:'room', event:'add'}
 
@@ -57,7 +57,7 @@ module.exports = class GroupController extends Controller
 				{name, jid} = item.attrs
 				@groups[item.attrs.jid] = {name:item.attrs.name, jid:item.attrs.jid}
 
-				_.throttle(@realtime.joinRoom(item.attrs.jid), 1000)
+				@realtime.joinRoom item.attrs.jid
 
 				@emit 'rosterItem', {name, jid, section:'groups', type:'room', event:'add'}
 			else
