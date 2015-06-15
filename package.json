@@ -18,9 +18,20 @@
   },
   "main": "./src/index",
   "dependencies": {
+    "hubot": "^2.13.2",
     "node-xmpp-client": "^1.0.0-alpha20",
     "node-xmpp-core": "^1.0.0-alpha13",
     "underscore": "^1.8.2",
     "underscore.string": "^3.0.3"
-  }
+  },
+  "gitHead": "cd42fbb14f5f98095f34d4db16029bf986f05a0f",
+  "bugs": {
+    "url": "https://github.com/rbrcurtis/hubot-purecloud/issues"
+  },
+  "readme": "ERROR: No README data found!",
+  "homepage": "https://github.com/rbrcurtis/hubot-purecloud#readme",
+  "_id": "hubot-purecloud@0.0.1",
+  "_shasum": "9836dc5d8209b87863aa06b6d8f4f5b636c30745",
+  "_from": "git+https://git@github.com/rbrcurtis/hubot-purecloud.git",
+  "_resolved": "git+https://git@github.com/rbrcurtis/hubot-purecloud.git#cd42fbb14f5f98095f34d4db16029bf986f05a0f"
 }

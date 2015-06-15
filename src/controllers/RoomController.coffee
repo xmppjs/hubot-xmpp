@@ -24,7 +24,7 @@ module.exports = class RoomController extends Controller
       @once 'join:'+roomJid.split('@')[0], =>
         # @realtime.sendMessage roomJid, 'Hello!'
         if typeof callback is 'function' then callback()
-    , 1000
+    , 20
 
     leaveRoom: (roomJid) ->
       unless roomJid then return console?.error('leaveRoom called with no jid.')
