@@ -16,7 +16,7 @@ module.exports = class RoomController extends Controller
 
       @realtime.send stanza
 
-    joinRoom: (roomJid, callback) ->
+    joinRoom: _.throttle (roomJid, callback) ->
       unless roomJid then return console?.error('joinRoom called with no jid.')
       roomJid = roomJid.toString().split('@')[0]+'@conference.'+@realtime.jid.domain
       @realtime.debug 'room', 'joining', roomJid
@@ -24,6 +24,7 @@ module.exports = class RoomController extends Controller
       @once 'join:'+roomJid.split('@')[0], =>
         # @realtime.sendMessage roomJid, 'Hello!'
         if typeof callback is 'function' then callback()
+    , 1000
 
     leaveRoom: (roomJid) ->
       unless roomJid then return console?.error('leaveRoom called with no jid.')
