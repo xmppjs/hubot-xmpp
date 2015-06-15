@@ -73,7 +73,7 @@ module.exports = class ActiveChatController extends Controller
       debug '********** actives', actives
       for jid, obj of actives
         if obj.type is 'room'
-          _.throttle(@realtime.joinRoom(jid), 50)
+          _.throttle(@realtime.joinRoom(jid), 1000)
 
   onDisconnect: ->
     @_actives = null
