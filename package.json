@@ -28,11 +28,11 @@
     "test": "make test"
   },
   "main": "./src/xmpp",
-  "engine": "node > 0.6.0 < 0.8.0",
+  "engine": "node > 0.6.0 < 0.13.0",
   "dependencies": {
-    "node-xmpp-client": "0.4.x",
-    "ltx": "0.4.x",
-    "node-xmpp-core": "0.5.x"
+    "node-xmpp-client": "1.0.0-alpha20",
+    "ltx": "0.9.0",
+    "node-xmpp-core": "1.0.0-alpha14"
   },
   "devDependencies": {
     "coffee-script": "1.1.3",
