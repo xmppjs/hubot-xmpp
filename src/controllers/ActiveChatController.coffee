@@ -57,7 +57,7 @@ module.exports = class ActiveChatController extends Controller
 
   constructor: ->
     super
-    @_actives = {}
+    @_actives = null
     @_updateQueue = null
     @_updateQueue = []
     @realtime.on 'rosterItem', ({type}) => @emit type
@@ -76,13 +76,14 @@ module.exports = class ActiveChatController extends Controller
           @realtime.joinRoom jid
 
   onDisconnect: ->
-    @_actives = {}
+    @_actives = null
     @_updateQueue = []
 
   activeChatsResult: (stanza) ->
     items = stanza.getChildByAttr('node', "orgspan:activeChats", null, true)
     @realtime.debug 'active', 'got activeChats result', items.toString()
     oldActives = @_actives or {}
+    @_actives = {}
     for child in items.getChildren('item')
       jid = child.attrs.id
       active = true
