@@ -114,7 +114,7 @@ module.exports = class ActiveChatController extends Controller
       else if child.is 'retract'
         active = false
       @realtime.debug 'active', 'set', {id, active, type}, child.toString()
-      @_actives[child.attrs.id] = {active, type}
+      @_actives?[child.attrs.id] = {active, type}
       @emit 'activeChat', {jid:id, active, type}
 
 
