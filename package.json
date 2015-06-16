@@ -18,11 +18,13 @@
   },
   "main": "./src/index",
   "dependencies": {
-    "hubot": "^2.13.2",
     "node-xmpp-client": "^1.0.0-alpha20",
     "node-xmpp-core": "^1.0.0-alpha13",
     "underscore": "^1.8.2",
     "underscore.string": "^3.0.3"
+  },
+  "dev-dependencies": {
+    "hubot": "^2.13.2"
   },
   "gitHead": "cd42fbb14f5f98095f34d4db16029bf986f05a0f",
   "bugs": {
