@@ -185,8 +185,12 @@ class PurecloudBot extends Adapter
     console.log 'message', 'got msg', msg, @options.username
 
 
-    if msg.type is 'person' then user = @robot.brain.userForId msg.from
-    else user = @robot.brain.userForId msg.to
+    if msg.type is 'person'
+      user = @robot.brain.userForId msg.from
+      user.room = msg.from
+    else 
+      user = @robot.brain.userForId msg.to
+      user.room = msg.to
 
     console.log 'message', 'user', user
     
