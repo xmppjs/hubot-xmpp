@@ -233,7 +233,18 @@ describe 'XmppBot', ->
       stanza.attrs.from = 'test@example.com/bot'
       assert.strictEqual bot.readMessage(stanza), undefined
 
+    it 'should send a message for private message', (done) ->
+      bot.receive = (message) ->
+        assert.equal message.user.type, 'chat'
+        assert.equal message.user.name, 'test'
+        assert.equal message.user.privateChatJID, 'test@example.com/ernie'
+        assert.equal message.user.room, undefined
+        assert.equal message.text, 'message text'
+        done()
+      bot.readMessage stanza
+
     it 'should send a message (with bot name prefix added) for private message', (done) ->
+      bot.options.pmAddPrefix = true
       bot.receive = (message) ->
         assert.equal message.user.type, 'chat'
         assert.equal message.user.name, 'test'
@@ -248,6 +259,7 @@ describe 'XmppBot', ->
           body =
             getText: ->
               'bot message text'
+      bot.options.pmAddPrefix = true
       bot.receive = (message) ->
         assert.equal message.user.type, 'chat'
         assert.equal message.user.name, 'test'
@@ -263,6 +275,7 @@ describe 'XmppBot', ->
           body =
             getText: ->
               ':message text'
+      bot.options.pmAddPrefix = true
       bot.receive = (message) ->
         assert.equal message.user.type, 'chat'
         assert.equal message.user.name, 'test'
