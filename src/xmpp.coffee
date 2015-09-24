@@ -208,6 +208,10 @@ class XmppBot extends Adapter
       room = undefined
       # Also store the private JID so we can use it in the send method
       privateChatJID = from
+      # For private messages, make the commands work even without passing the hubot name or alias
+      if message.slice(0, @robot.name.length).toLowerCase() != @robot.name.toLowerCase() and
+          message.slice(0, process.env.HUBOT_ALIAS?.length).toLowerCase() != process.env.HUBOT_ALIAS?.toLowerCase()
+        message = "#{@robot.name} #{message}"
 
     # note that 'user' isn't a full JID in case of group chat,
     # just the local user part
