@@ -233,13 +233,42 @@ describe 'XmppBot', ->
       stanza.attrs.from = 'test@example.com/bot'
       assert.strictEqual bot.readMessage(stanza), undefined
 
-    it 'should send a message for private message', (done) ->
+    it 'should send a message (with bot name prefix added) for private message', (done) ->
       bot.receive = (message) ->
         assert.equal message.user.type, 'chat'
         assert.equal message.user.name, 'test'
         assert.equal message.user.privateChatJID, 'test@example.com/ernie'
         assert.equal message.user.room, undefined
-        assert.equal message.text, 'message text'
+        assert.equal message.text, 'bot message text'
+        done()
+      bot.readMessage stanza
+
+    it 'should send a message (with bot name prefix) for private message (with bot name prefix)', (done) ->
+      stanza.getChild = () ->
+          body =
+            getText: ->
+              'bot message text'
+      bot.receive = (message) ->
+        assert.equal message.user.type, 'chat'
+        assert.equal message.user.name, 'test'
+        assert.equal message.user.privateChatJID, 'test@example.com/ernie'
+        assert.equal message.user.room, undefined
+        assert.equal message.text, 'bot message text'
+        done()
+      bot.readMessage stanza
+
+    it 'should send a message (with alias prefix) for private message (with alias prefix)', (done) ->
+      process.env.HUBOT_ALIAS = ':'
+      stanza.getChild = () ->
+          body =
+            getText: ->
+              ':message text'
+      bot.receive = (message) ->
+        assert.equal message.user.type, 'chat'
+        assert.equal message.user.name, 'test'
+        assert.equal message.user.privateChatJID, 'test@example.com/ernie'
+        assert.equal message.user.room, undefined
+        assert.equal message.text, ':message text'
         done()
       bot.readMessage stanza
 
