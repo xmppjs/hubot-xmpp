@@ -150,6 +150,18 @@ class XmppBot extends Adapter
         to: "#{room.jid}/#{@robot.name}",
         type: 'unavailable')
 
+  # XMPP invite to a room, directly - http://xmpp.org/extensions/xep-0249.html
+  sendInvite: (room, invitee, reason) ->
+    @client.send do =>
+      @robot.logger.debug "Inviting #{invitee} to #{room.jid}"
+      message = new ltx.Element('message',
+        to : invitee)
+      message.c('x',
+        xmlns : 'jabber:x:conference',
+        jid: room.jid,
+        reason: reason)
+      return message
+
   read: (stanza) =>
     if stanza.attrs.type is 'error'
       @robot.logger.error '[xmpp error]' + stanza

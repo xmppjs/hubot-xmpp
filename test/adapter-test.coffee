@@ -337,6 +337,31 @@ describe 'XmppBot', ->
         done()
       bot.topic envelope, 'one', 'two'
 
+  describe '#sendInvite()', ->
+    bot = Bot.use()
+
+    bot.client =
+      stub: 'xmpp client'
+
+    bot.robot =
+      name: 'bot'
+      logger:
+        debug: () ->
+
+    room =
+      jid: 'test@example.com'
+      password: false
+    invitee = 'anup@example.com'
+    reason = 'Inviting to test'
+
+    it 'should call @client.send()', (done) ->
+      bot.client.send = (message) ->
+        assert.equal message.attrs.to, invitee
+        assert.equal message.children[0].attrs.jid, room.jid
+        assert.equal message.children[0].attrs.reason, reason
+        done()
+      bot.sendInvite room, invitee, reason
+
   describe '#error()', ->
     bot = Bot.use()
     bot.robot =
