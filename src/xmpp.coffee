@@ -31,6 +31,7 @@ class XmppBot extends Adapter
       legacySSL: process.env.HUBOT_XMPP_LEGACYSSL
       preferredSaslMechanism: process.env.HUBOT_XMPP_PREFERRED_SASL_MECHANISM
       disallowTLS: process.env.HUBOT_XMPP_DISALLOW_TLS
+      pmAddPrefix: process.env.HUBOT_XMPP_PM_ADD_PREFIX
 
     @robot.logger.info util.inspect(options)
     options.password = process.env.HUBOT_XMPP_PASSWORD
@@ -208,6 +209,11 @@ class XmppBot extends Adapter
       room = undefined
       # Also store the private JID so we can use it in the send method
       privateChatJID = from
+      # For private messages, make the commands work even when they are not prefixed with hubot name or alias
+      if @options.pmAddPrefix and
+          message.slice(0, @robot.name.length).toLowerCase() != @robot.name.toLowerCase() and
+          message.slice(0, process.env.HUBOT_ALIAS?.length).toLowerCase() != process.env.HUBOT_ALIAS?.toLowerCase()
+        message = "#{@robot.name} #{message}"
 
     # note that 'user' isn't a full JID in case of group chat,
     # just the local user part
