@@ -173,6 +173,20 @@ describe 'XmppBot', ->
         done()
       bot.readIq stanza
 
+    it 'should parse room query iqs for users in the room', (done) ->
+      stanza.attrs.id = 'get_users_in_room'
+      stanza.attrs.from = 'test@example.com'
+      userItems = [
+        { attrs: {name: 'mark'} },
+        { attrs: {name: 'anup'} }
+      ]
+      stanza.children = [ {children: userItems} ]
+      bot.on 'receivedUsersForRoom', (roomJID, usersInRoom) ->
+        assert.equal roomJID, stanza.attrs.from
+        assert.deepEqual usersInRoom, (item.attrs.name for item in userItems)
+        done()
+      bot.readIq stanza
+
   describe '#readMessage()', ->
     stanza = ''
     bot = Bot.use()
@@ -336,6 +350,35 @@ describe 'XmppBot', ->
         assert.equal "one\ntwo", message.children[0]
         done()
       bot.topic envelope, 'one', 'two'
+
+  describe '#getUsersInRoom()', ->
+    bot = Bot.use()
+
+    bot.client =
+      stub: 'xmpp client'
+
+    bot.robot =
+      name: 'bot'
+      logger:
+        debug: () ->
+
+    bot.options =
+      username: 'bot@example.com'
+
+    room =
+      jid: 'test@example.com'
+      password: false
+
+    it 'should call @client.send()', (done) ->
+      bot.client.send = (message) ->
+        assert.equal message.attrs.from, bot.options.username
+        assert.equal message.attrs.id, 'get_users_in_room'
+        assert.equal message.attrs.to, room.jid
+        assert.equal message.attrs.type, 'get'
+        assert.equal message.children[0].name, 'query'
+        assert.equal message.children[0].attrs.xmlns, 'http://jabber.org/protocol/disco#items'
+        done()
+      bot.getUsersInRoom room
 
   describe '#sendInvite()', ->
     bot = Bot.use()
