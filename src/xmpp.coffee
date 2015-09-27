@@ -150,6 +150,22 @@ class XmppBot extends Adapter
         to: "#{room.jid}/#{@robot.name}",
         type: 'unavailable')
 
+  # This just sends the request for users in a room and the server response is
+  # read in readIq(), after which the event 'receivedUsersForRoom' is emitted.
+  # Use it to actually get the users.
+  # http://xmpp.org/extensions/xep-0045.html#disco-roomitems
+  getUsersInRoom: (room) ->
+    @client.send do =>
+      @robot.logger.debug "Fetching users in the room #{room.jid}"
+      message = new ltx.Element('iq',
+        from : @options.username,
+        id: 'get_users_in_room'
+        to : room.jid,
+        type: 'get')
+      message.c('query',
+        xmlns : 'http://jabber.org/protocol/disco#items')
+      return message
+
   # XMPP invite to a room, directly - http://xmpp.org/extensions/xep-0249.html
   sendInvite: (room, invitee, reason) ->
     @client.send do =>
@@ -189,6 +205,15 @@ class XmppBot extends Adapter
 
       @robot.logger.debug "[sending pong] #{pong}"
       @client.send pong
+    else if (stanza.attrs.id == 'get_users_in_room' && stanza.children[0].children)
+      roomJID = stanza.attrs.from
+      userItems = stanza.children[0].children
+
+      # Note that this contains usernames and NOT the full user JID.
+      usersInRoom = (item.attrs.name for item in userItems)
+      @robot.logger.debug "[users in room] #{roomJID} has #{usersInRoom}"
+
+      @emit 'receivedUsersForRoom', roomJID, usersInRoom
 
   readMessage: (stanza) =>
     # ignore non-messages
