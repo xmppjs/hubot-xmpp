@@ -19,6 +19,9 @@ class XmppBot extends Adapter
     # Key is the room JID, value is the private JID
     @roomToPrivateJID = {}
 
+    # http://stackoverflow.com/a/646643
+    String::startsWith ?= (s) -> @slice(0, s.length) == s
+
   run: ->
     options =
       username: process.env.HUBOT_XMPP_USERNAME
@@ -154,20 +157,27 @@ class XmppBot extends Adapter
   # apply the callback against the retrieved data.
   # callback should be of the form `(usersInRoom) -> console.log usersInRoom`
   # where usersInRoom is an array of username strings.
-  getUsersInRoom: (room, callback) ->
+  # For normal use, no need to pass requestId: it's there for testing purposes.
+  getUsersInRoom: (room, callback, requestId) ->
+    # (pseudo) random string to keep track of the current request
+    # Useful in case of concurrent requests
+    unless requestId
+      requestId = 'get_users_in_room_' + Date.now() + Math.random().toString(36).slice(2)
+
     # http://xmpp.org/extensions/xep-0045.html#disco-roomitems
     @client.send do =>
       @robot.logger.debug "Fetching users in the room #{room.jid}"
       message = new ltx.Element('iq',
         from : @options.username,
-        id: 'get_users_in_room'
+        id: requestId,
         to : room.jid,
         type: 'get')
       message.c('query',
         xmlns : 'http://jabber.org/protocol/disco#items')
       return message
 
-    @once 'receivedUsersInRoom', callback
+    # Listen to the event with the current request id, one time only
+    @once "completedRequest#{requestId}", callback
 
   # XMPP invite to a room, directly - http://xmpp.org/extensions/xep-0249.html
   sendInvite: (room, invitee, reason) ->
@@ -208,7 +218,7 @@ class XmppBot extends Adapter
 
       @robot.logger.debug "[sending pong] #{pong}"
       @client.send pong
-    else if (stanza.attrs.id == 'get_users_in_room' && stanza.children[0].children)
+    else if ((stanza.attrs.id.startsWith 'get_users_in_room') && stanza.children[0].children)
       roomJID = stanza.attrs.from
       userItems = stanza.children[0].children
 
@@ -216,7 +226,7 @@ class XmppBot extends Adapter
       usersInRoom = (item.attrs.name for item in userItems)
       @robot.logger.debug "[users in room] #{roomJID} has #{usersInRoom}"
 
-      @emit 'receivedUsersInRoom', usersInRoom
+      @emit "completedRequest#{stanza.attrs.id}", usersInRoom
 
   readMessage: (stanza) =>
     # ignore non-messages

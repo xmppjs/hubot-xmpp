@@ -174,14 +174,14 @@ describe 'XmppBot', ->
       bot.readIq stanza
 
     it 'should parse room query iqs for users in the room', (done) ->
-      stanza.attrs.id = 'get_users_in_room'
+      stanza.attrs.id = 'get_users_in_room_8139nj32ma'
       stanza.attrs.from = 'test@example.com'
       userItems = [
         { attrs: {name: 'mark'} },
         { attrs: {name: 'anup'} }
       ]
       stanza.children = [ {children: userItems} ]
-      bot.on 'receivedUsersInRoom', (usersInRoom) ->
+      bot.on "completedRequest#{stanza.attrs.id}", (usersInRoom) ->
         assert.deepEqual usersInRoom, (item.attrs.name for item in userItems)
         done()
       bot.readIq stanza
@@ -371,7 +371,7 @@ describe 'XmppBot', ->
     it 'should call @client.send()', (done) ->
       bot.client.send = (message) ->
         assert.equal message.attrs.from, bot.options.username
-        assert.equal message.attrs.id, 'get_users_in_room'
+        assert.equal (message.attrs.id.startsWith 'get_users_in_room'), true
         assert.equal message.attrs.to, room.jid
         assert.equal message.attrs.type, 'get'
         assert.equal message.children[0].name, 'query'
@@ -381,11 +381,13 @@ describe 'XmppBot', ->
 
     it 'should call callback on receiving users', (done) ->
       users  = ['mark', 'anup']
+      requestId = 'get_users_in_room_8139nj32ma'
       bot.client.send = () ->
-      bot.getUsersInRoom room, (usersInRoom) ->
+      callback = (usersInRoom) ->
         assert.deepEqual usersInRoom, users
         done()
-      bot.emit 'receivedUsersInRoom', users
+      bot.getUsersInRoom room, callback, requestId
+      bot.emit "completedRequest#{requestId}", users
 
   describe '#sendInvite()', ->
     bot = Bot.use()
