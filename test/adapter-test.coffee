@@ -181,8 +181,7 @@ describe 'XmppBot', ->
         { attrs: {name: 'anup'} }
       ]
       stanza.children = [ {children: userItems} ]
-      bot.on 'receivedUsersForRoom', (roomJID, usersInRoom) ->
-        assert.equal roomJID, stanza.attrs.from
+      bot.on 'receivedUsersInRoom', (usersInRoom) ->
         assert.deepEqual usersInRoom, (item.attrs.name for item in userItems)
         done()
       bot.readIq stanza
@@ -378,7 +377,15 @@ describe 'XmppBot', ->
         assert.equal message.children[0].name, 'query'
         assert.equal message.children[0].attrs.xmlns, 'http://jabber.org/protocol/disco#items'
         done()
-      bot.getUsersInRoom room
+      bot.getUsersInRoom room, () ->
+
+    it 'should call callback on receiving users', (done) ->
+      users  = ['mark', 'anup']
+      bot.client.send = () ->
+      bot.getUsersInRoom room, (usersInRoom) ->
+        assert.deepEqual usersInRoom, users
+        done()
+      bot.emit 'receivedUsersInRoom', users
 
   describe '#sendInvite()', ->
     bot = Bot.use()

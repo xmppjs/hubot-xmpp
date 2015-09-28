@@ -150,11 +150,12 @@ class XmppBot extends Adapter
         to: "#{room.jid}/#{@robot.name}",
         type: 'unavailable')
 
-  # This just sends the request for users in a room and the server response is
-  # read in readIq(), after which the event 'receivedUsersForRoom' is emitted.
-  # Use it to actually get the users.
-  # http://xmpp.org/extensions/xep-0045.html#disco-roomitems
-  getUsersInRoom: (room) ->
+  # Send query for users in the room and once the server response is parsed,
+  # apply the callback against the retrieved data.
+  # callback should be of the form `(usersInRoom) -> console.log usersInRoom`
+  # where usersInRoom is an array of username strings.
+  getUsersInRoom: (room, callback) ->
+    # http://xmpp.org/extensions/xep-0045.html#disco-roomitems
     @client.send do =>
       @robot.logger.debug "Fetching users in the room #{room.jid}"
       message = new ltx.Element('iq',
@@ -165,6 +166,8 @@ class XmppBot extends Adapter
       message.c('query',
         xmlns : 'http://jabber.org/protocol/disco#items')
       return message
+
+    @once 'receivedUsersInRoom', callback
 
   # XMPP invite to a room, directly - http://xmpp.org/extensions/xep-0249.html
   sendInvite: (room, invitee, reason) ->
@@ -213,7 +216,7 @@ class XmppBot extends Adapter
       usersInRoom = (item.attrs.name for item in userItems)
       @robot.logger.debug "[users in room] #{roomJID} has #{usersInRoom}"
 
-      @emit 'receivedUsersForRoom', roomJID, usersInRoom
+      @emit 'receivedUsersInRoom', usersInRoom
 
   readMessage: (stanza) =>
     # ignore non-messages
