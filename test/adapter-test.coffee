@@ -173,6 +173,19 @@ describe 'XmppBot', ->
         done()
       bot.readIq stanza
 
+    it 'should parse room query iqs for users in the room', (done) ->
+      stanza.attrs.id = 'get_users_in_room_8139nj32ma'
+      stanza.attrs.from = 'test@example.com'
+      userItems = [
+        { attrs: {name: 'mark'} },
+        { attrs: {name: 'anup'} }
+      ]
+      stanza.children = [ {children: userItems} ]
+      bot.on "completedRequest#{stanza.attrs.id}", (usersInRoom) ->
+        assert.deepEqual usersInRoom, (item.attrs.name for item in userItems)
+        done()
+      bot.readIq stanza
+
   describe '#readMessage()', ->
     stanza = ''
     bot = Bot.use()
@@ -336,6 +349,70 @@ describe 'XmppBot', ->
         assert.equal "one\ntwo", message.children[0]
         done()
       bot.topic envelope, 'one', 'two'
+
+  describe '#getUsersInRoom()', ->
+    bot = Bot.use()
+
+    bot.client =
+      stub: 'xmpp client'
+
+    bot.robot =
+      name: 'bot'
+      logger:
+        debug: () ->
+
+    bot.options =
+      username: 'bot@example.com'
+
+    room =
+      jid: 'test@example.com'
+      password: false
+
+    it 'should call @client.send()', (done) ->
+      bot.client.send = (message) ->
+        assert.equal message.attrs.from, bot.options.username
+        assert.equal (message.attrs.id.startsWith 'get_users_in_room'), true
+        assert.equal message.attrs.to, room.jid
+        assert.equal message.attrs.type, 'get'
+        assert.equal message.children[0].name, 'query'
+        assert.equal message.children[0].attrs.xmlns, 'http://jabber.org/protocol/disco#items'
+        done()
+      bot.getUsersInRoom room, () ->
+
+    it 'should call callback on receiving users', (done) ->
+      users  = ['mark', 'anup']
+      requestId = 'get_users_in_room_8139nj32ma'
+      bot.client.send = () ->
+      callback = (usersInRoom) ->
+        assert.deepEqual usersInRoom, users
+        done()
+      bot.getUsersInRoom room, callback, requestId
+      bot.emit "completedRequest#{requestId}", users
+
+  describe '#sendInvite()', ->
+    bot = Bot.use()
+
+    bot.client =
+      stub: 'xmpp client'
+
+    bot.robot =
+      name: 'bot'
+      logger:
+        debug: () ->
+
+    room =
+      jid: 'test@example.com'
+      password: false
+    invitee = 'anup@example.com'
+    reason = 'Inviting to test'
+
+    it 'should call @client.send()', (done) ->
+      bot.client.send = (message) ->
+        assert.equal message.attrs.to, invitee
+        assert.equal message.children[0].attrs.jid, room.jid
+        assert.equal message.children[0].attrs.reason, reason
+        done()
+      bot.sendInvite room, invitee, reason
 
   describe '#error()', ->
     bot = Bot.use()
