@@ -218,7 +218,7 @@ class XmppBot extends Adapter
 
       @robot.logger.debug "[sending pong] #{pong}"
       @client.send pong
-    else if ((stanza.attrs.id.startsWith 'get_users_in_room') && stanza.children[0].children)
+    else if ((stanza.attrs.id?.startsWith 'get_users_in_room') && stanza.children[0].children)
       roomJID = stanza.attrs.from
       userItems = stanza.children[0].children
 
