@@ -1,9 +1,5 @@
 language: node_js
 
-node_js:
-    - "0.10"
-    - "0.12"
-    - "4.0"
 
 matrix:
     fast_finish: true
@@ -12,8 +8,10 @@ matrix:
         - node_js: "0.10"
         - node_js: "0.12"
         - node_js: "4.0"
+        - node_js: "4.1"
 
     allow_failures:
         - node_js: "4.0"
+        - node_js: "4.1"
 
 sudo: false
