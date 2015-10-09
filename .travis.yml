@@ -10,8 +10,4 @@ matrix:
         - node_js: "4.0"
         - node_js: "4.1"
 
-    allow_failures:
-        - node_js: "4.0"
-        - node_js: "4.1"
-
 sudo: false
