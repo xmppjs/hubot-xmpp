@@ -1,6 +1,6 @@
 Bot = require '../src/xmpp'
 XmppClient = require 'node-xmpp-client'
-ltx = require 'ltx'
+ltx = XmppClient.ltx
 
 {Adapter,Robot,EnterMessage,LeaveMessage,TextMessage} = require 'hubot'
 

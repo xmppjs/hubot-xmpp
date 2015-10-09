@@ -1,8 +1,9 @@
 {Adapter,Robot,TextMessage,EnterMessage,LeaveMessage} = require 'hubot'
 
 XmppClient = require 'node-xmpp-client'
-JID = require('node-xmpp-core').JID
-ltx = require 'ltx'
+JID = XmppClient.JID
+Stanza = XmppClient.Stanza
+ltx = XmppClient.ltx
 util = require 'util'
 
 class XmppBot extends Adapter
@@ -96,7 +97,7 @@ class XmppBot extends Adapter
     @client.connection.socket.setTimeout 0
     @client.connection.socket.setKeepAlive true, @options.keepaliveInterval
 
-    presence = new ltx.Element 'presence'
+    presence = new Stanza 'presence'
     presence.c('nick', xmlns: 'http://jabber.org/protocol/nick').t(@robot.name)
     @client.send presence
     @robot.logger.info 'Hubot XMPP sent initial presence'
@@ -108,7 +109,7 @@ class XmppBot extends Adapter
     @reconnectTryCount = 0
 
   ping: =>
-    ping = new ltx.Element('iq', type: 'get')
+    ping = new Stanza('iq', type: 'get')
     ping.c('ping', xmlns: 'urn:xmpp:ping')
 
     @robot.logger.debug "[sending ping] #{ping}"
@@ -131,7 +132,7 @@ class XmppBot extends Adapter
       # prevent the server from confusing us with old messages
       # and it seems that servers don't reliably support maxchars
       # or zero values
-      el = new ltx.Element('presence', to: "#{room.jid}/#{@robot.name}")
+      el = new Stanza('presence', to: "#{room.jid}/#{@robot.name}")
       x = el.c('x', xmlns: 'http://jabber.org/protocol/muc')
       x.c('history', seconds: 1 )
 
@@ -149,7 +150,7 @@ class XmppBot extends Adapter
     @client.send do =>
       @robot.logger.debug "Leaving #{room.jid}/#{@robot.name}"
 
-      return new ltx.Element('presence',
+      return new Stanza('presence',
         to: "#{room.jid}/#{@robot.name}",
         type: 'unavailable')
 
@@ -167,7 +168,7 @@ class XmppBot extends Adapter
     # http://xmpp.org/extensions/xep-0045.html#disco-roomitems
     @client.send do =>
       @robot.logger.debug "Fetching users in the room #{room.jid}"
-      message = new ltx.Element('iq',
+      message = new Stanza('iq',
         from : @options.username,
         id: requestId,
         to : room.jid,
@@ -183,7 +184,7 @@ class XmppBot extends Adapter
   sendInvite: (room, invitee, reason) ->
     @client.send do =>
       @robot.logger.debug "Inviting #{invitee} to #{room.jid}"
-      message = new ltx.Element('message',
+      message = new Stanza('message',
         to : invitee)
       message.c('x',
         xmlns : 'jabber:x:conference',
@@ -210,7 +211,7 @@ class XmppBot extends Adapter
     # Some servers use iq pings to make sure the client is still functional.
     # We need to reply or we'll get kicked out of rooms we've joined.
     if (stanza.attrs.type == 'get' && stanza.children[0].name == 'ping')
-      pong = new ltx.Element('iq',
+      pong = new Stanza('iq',
         to: stanza.attrs.from
         from: stanza.attrs.to
         type: 'result'
@@ -293,7 +294,7 @@ class XmppBot extends Adapter
       when 'subscribe'
         @robot.logger.debug "#{stanza.attrs.from} subscribed to me"
 
-        @client.send new ltx.Element('presence',
+        @client.send new Stanza('presence',
             from: stanza.attrs.to
             to:   stanza.attrs.from
             id:   stanza.attrs.id
@@ -302,7 +303,7 @@ class XmppBot extends Adapter
       when 'probe'
         @robot.logger.debug "#{stanza.attrs.from} probed me"
 
-        @client.send new ltx.Element('presence',
+        @client.send new Stanza('presence',
             from: stanza.attrs.to
             to:   stanza.attrs.from
             id:   stanza.attrs.id
@@ -407,7 +408,7 @@ class XmppBot extends Adapter
         message.attrs.type ?= params.type
       else
         parsedMsg = try new ltx.parse(msg)
-        bodyMsg   = new ltx.Element('message', params).
+        bodyMsg   = new Stanza('message', params).
                     c('body').t(msg)
         message   = if parsedMsg?
                       bodyMsg.up().
@@ -430,7 +431,7 @@ class XmppBot extends Adapter
   topic: (envelope, strings...) ->
     string = strings.join "\n"
 
-    message = new ltx.Element('message',
+    message = new Stanza('message',
                 to: envelope.room
                 type: envelope.user.type
               ).
