@@ -31,7 +31,9 @@ class XmppBot extends Adapter
       port: process.env.HUBOT_XMPP_PORT
       rooms: @parseRooms process.env.HUBOT_XMPP_ROOMS.split(',')
       # ms interval to send whitespace to xmpp server
-      keepaliveInterval: 30000
+      keepaliveInterval: process.env.HUBOT_XMPP_KEEPALIVE_INTERVAL || 30000
+      reconnectTry: process.env.HUBOT_XMPP_RECONNECT_TRY || 5
+      reconnectWait: process.env.HUBOT_XMPP_RECONNECT_WAIT || 5000
       legacySSL: process.env.HUBOT_XMPP_LEGACYSSL
       preferredSaslMechanism: process.env.HUBOT_XMPP_PREFERRED_SASL_MECHANISM
       disallowTLS: process.env.HUBOT_XMPP_DISALLOW_TLS
@@ -46,8 +48,10 @@ class XmppBot extends Adapter
 
   # Only try to reconnect 5 times
   reconnect: () ->
+    options = @options
+
     @reconnectTryCount += 1
-    if @reconnectTryCount > 5
+    if @reconnectTryCount > options.reconnectTry
       @robot.logger.error 'Unable to reconnect to jabber server dying.'
       process.exit 1
 
@@ -58,7 +62,7 @@ class XmppBot extends Adapter
 
     setTimeout () =>
       @makeClient()
-    , 5000
+    , options.reconnectWait
 
   makeClient: () ->
     options = @options

@@ -983,6 +983,7 @@ describe 'XmppBot', ->
         done()
 
       assert.equal 0, bot.reconnectTryCount
+      bot.options = {reconnectTry: 5}
       bot.reconnect()
       assert.equal 1, bot.reconnectTryCount, 'No time elapsed'
       clock.tick 5001
@@ -991,6 +992,7 @@ describe 'XmppBot', ->
       mock = sinon.mock(process)
       mock.expects('exit').once()
 
+      bot.options = {reconnectTry: 5}
       bot.reconnectTryCount = 5
       bot.reconnect()
 

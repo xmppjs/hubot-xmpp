@@ -1,6 +1,6 @@
 # Hubot XMPP
 
-Connects Hubot to your XMPP network 
+Connects Hubot to your XMPP network
 
 [![Build Status](https://secure.travis-ci.org/markstory/hubot-xmpp.png?branch=master)](http://travis-ci.org/markstory/hubot-xmpp)
 
@@ -29,11 +29,14 @@ Optional:
   the host to be defined.
 * `HUBOT_XMPP_PREFERRED_SASL_MECHANISM` Used to change the encoding used for SASL.
 * `HUBOT_XMPP_DISALLOW_TLS` Prevent upgrading the connection to a secure one via TLS.
-* `HUBOT_XMPP_PM_ADD_PREFIX` Make commands work in PMs to hubot without robot name/alias
+* `HUBOT_XMPP_PM_ADD_PREFIX` Make commands work in PMs to hubot without robot name/alias.
+* `HUBOT_XMPP_KEEPALIVE_INTERVAL` Keep-alive interval in ms.
+* `HUBOT_XMPP_RECONNECT_TRY` the number of reconnect retry in case of disconnection, default is 5.
+* `HUBOT_XMPP_RECONNECT_WAIT` the time in ms to wait before reconnecting, default is 5000.
 
 `HUBOT_XMPP_ROOMS` can be a comma separated list of rooms to join.  If
 your rooms require passwords you should use the `jid:password` syntax.
-Room passwords cannot contain `,`. Room names must be the full jid of the 
+Room passwords cannot contain `,`. Room names must be the full jid of the
 room for example `dev@conference.jabber.example.org`.
 
 `HUBOT_XMPP_PM_ADD_PREFIX` works by prefixing the private message with hubot name, so a
