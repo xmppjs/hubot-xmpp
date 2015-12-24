@@ -12,11 +12,7 @@
     "xmpp",
     "adapter"
   ],
-  "licenses": [
-    {
-      "type": "MIT"
-    }
-  ],
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git://github.com/markstory/hubot-xmpp.git"
@@ -28,9 +24,11 @@
     "test": "make test"
   },
   "main": "./src/xmpp",
-  "engine": "node > 0.6.0 < 0.13.0",
+  "engines": {
+    "node": ">=0.10"
+  },
   "dependencies": {
-    "node-xmpp-client": "2.0.2"
+    "node-xmpp-client": "3.0.0"
   },
   "devDependencies": {
     "coffee-script": "1.1.3",

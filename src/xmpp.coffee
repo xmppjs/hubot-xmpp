@@ -1,9 +1,5 @@
 {Adapter,Robot,TextMessage,EnterMessage,LeaveMessage} = require 'hubot'
-
-XmppClient = require 'node-xmpp-client'
-JID = XmppClient.JID
-Stanza = XmppClient.Stanza
-ltx = XmppClient.ltx
+{JID, Stanza, Client, parse, Element} = require 'node-xmpp-client'
 util = require 'util'
 
 class XmppBot extends Adapter
@@ -63,7 +59,7 @@ class XmppBot extends Adapter
   makeClient: () ->
     options = @options
 
-    @client = new XmppClient
+    @client = new Client
       reconnect: true
       jid: options.username
       password: options.password
@@ -401,13 +397,12 @@ class XmppBot extends Adapter
         to: to
         type: envelope.user?.type or 'groupchat'
 
-      # ltx.Element type
-      if msg.attrs?
+      if msg instanceof Element
         message = msg.root()
         message.attrs.to ?= params.to
         message.attrs.type ?= params.type
       else
-        parsedMsg = try new ltx.parse(msg)
+        parsedMsg = try parse(msg)
         bodyMsg   = new Stanza('message', params).
                     c('body').t(msg)
         message   = if parsedMsg?
@@ -422,8 +417,7 @@ class XmppBot extends Adapter
 
   reply: (envelope, messages...) ->
     for msg in messages
-      # ltx.Element?
-      if msg.attrs?
+      if msg instanceof Element
         @send envelope, msg
       else
         @send envelope, "#{envelope.user.name}: #{msg}"
