@@ -9,5 +9,6 @@ matrix:
         - node_js: "4.0"
         - node_js: "4.1"
         - node_js: "4.2"
+        - node_js: "5"
 
 sudo: false
