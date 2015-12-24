@@ -1,6 +1,6 @@
 {
   "name": "hubot-xmpp",
-  "version": "0.1.14",
+  "version": "0.1.18",
   "author": {
     "name": "Mark Story",
     "email": "mark@mark-story.com",
@@ -28,11 +28,9 @@
     "test": "make test"
   },
   "main": "./src/xmpp",
-  "engine": "node > 0.6.0 < 0.8.0",
+  "engine": "node > 0.6.0 < 0.13.0",
   "dependencies": {
-    "ltx": "^0.9.0",
-    "node-xmpp-client": "^1.0.0-alpha20",
-    "node-xmpp-core": "^1.0.0-alpha14"
+    "node-xmpp-client": "2.0.2"
   },
   "devDependencies": {
     "coffee-script": "1.1.3",
