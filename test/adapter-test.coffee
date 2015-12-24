@@ -1,6 +1,5 @@
 Bot = require '../src/xmpp'
-XmppClient = require 'node-xmpp-client'
-ltx = XmppClient.ltx
+{Element} = require 'node-xmpp-client'
 
 {Adapter,Robot,EnterMessage,LeaveMessage,TextMessage} = require 'hubot'
 
@@ -739,7 +738,7 @@ describe 'XmppBot', ->
           type: 'groupchat'
         room: 'test@example.com'
 
-      el = new ltx.Element('message').c('body')
+      el = new Element('message').c('body')
         .t('testing')
 
       bot.client.send = (msg) ->

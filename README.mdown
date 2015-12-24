@@ -1,6 +1,6 @@
 # Hubot XMPP
 
-Connects Hubot to your XMPP network 
+Connects Hubot to your XMPP network
 
 [![Build Status](https://secure.travis-ci.org/markstory/hubot-xmpp.png?branch=master)](http://travis-ci.org/markstory/hubot-xmpp)
 
@@ -33,7 +33,7 @@ Optional:
 
 `HUBOT_XMPP_ROOMS` can be a comma separated list of rooms to join.  If
 your rooms require passwords you should use the `jid:password` syntax.
-Room passwords cannot contain `,`. Room names must be the full jid of the 
+Room passwords cannot contain `,`. Room names must be the full jid of the
 room for example `dev@conference.jabber.example.org`.
 
 `HUBOT_XMPP_PM_ADD_PREFIX` works by prefixing the private message with hubot name, so a
