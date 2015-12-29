@@ -5,6 +5,7 @@ util = require 'util'
 class XmppBot extends Adapter
 
   reconnectTryCount: 0
+  currentIqId: 1001
 
   constructor: ( robot ) ->
     @robot = robot
@@ -109,7 +110,7 @@ class XmppBot extends Adapter
     @reconnectTryCount = 0
 
   ping: =>
-    ping = new Stanza('iq', type: 'get')
+    ping = new Stanza('iq', type: 'get', id: @currentIqId++)
     ping.c('ping', xmlns: 'urn:xmpp:ping')
 
     @robot.logger.debug "[sending ping] #{ping}"
