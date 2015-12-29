@@ -1,6 +1,5 @@
 Bot = require '../src/xmpp'
-XmppClient = require 'node-xmpp-client'
-ltx = require 'ltx'
+{Element} = require 'node-xmpp-client'
 
 {Adapter,Robot,EnterMessage,LeaveMessage,TextMessage} = require 'hubot'
 
@@ -739,7 +738,7 @@ describe 'XmppBot', ->
           type: 'groupchat'
         room: 'test@example.com'
 
-      el = new ltx.Element('message').c('body')
+      el = new Element('message').c('body')
         .t('testing')
 
       bot.client.send = (msg) ->
@@ -983,6 +982,7 @@ describe 'XmppBot', ->
         done()
 
       assert.equal 0, bot.reconnectTryCount
+      bot.options = {reconnectTry: 5}
       bot.reconnect()
       assert.equal 1, bot.reconnectTryCount, 'No time elapsed'
       clock.tick 5001
@@ -991,6 +991,7 @@ describe 'XmppBot', ->
       mock = sinon.mock(process)
       mock.expects('exit').once()
 
+      bot.options = {reconnectTry: 5}
       bot.reconnectTryCount = 5
       bot.reconnect()
 
