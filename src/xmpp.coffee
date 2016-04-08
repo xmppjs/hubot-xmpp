@@ -447,7 +447,7 @@ class XmppBot extends Adapter
     if not process.env.HUBOT_XMPP_USERNAME
       throw new Error("HUBOT_XMPP_USERNAME is not defined; try: export HUBOT_XMPP_USERNAME='user@xmpp.service'")
     else if not process.env.HUBOT_XMPP_PASSWORD
-      throw new Error("HUBOT_IRC_PASSWORD is not defined; try: export HUBOT_XMPP_PASSWORD='password'")
+      throw new Error("HUBOT_XMPP_PASSWORD is not defined; try: export HUBOT_XMPP_PASSWORD='password'")
     else if not process.env.HUBOT_XMPP_ROOMS
       throw new Error("HUBOT_XMPP_ROOMS is not defined: try: export HUBOT_XMPP_ROOMS='room@conference.xmpp.service'")
 
