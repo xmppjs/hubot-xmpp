@@ -21,6 +21,8 @@ class XmppBot extends Adapter
     String::startsWith ?= (s) -> @slice(0, s.length) == s
 
   run: ->
+    do @checkCanStart
+
     options =
       username: process.env.HUBOT_XMPP_USERNAME
       password: '********'
@@ -440,6 +442,14 @@ class XmppBot extends Adapter
 
   offline: =>
     @robot.logger.debug "Received offline event"
+
+  checkCanStart: =>
+    if not process.env.HUBOT_XMPP_USERNAME
+      throw new Error("HUBOT_XMPP_USERNAME is not defined; try: export HUBOT_XMPP_USERNAME='user@xmpp.service'")
+    else if not process.env.HUBOT_XMPP_PASSWORD
+      throw new Error("HUBOT_XMPP_PASSWORD is not defined; try: export HUBOT_XMPP_PASSWORD='password'")
+    else if not process.env.HUBOT_XMPP_ROOMS
+      throw new Error("HUBOT_XMPP_ROOMS is not defined: try: export HUBOT_XMPP_ROOMS='room@conference.xmpp.service'")
 
 exports.use = (robot) ->
   new XmppBot robot
