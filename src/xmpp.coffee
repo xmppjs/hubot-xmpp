@@ -146,15 +146,16 @@ class XmppBot extends Adapter
         x.c('password').t(room.password)
       return x
 
-    # send a guid message and ignore any responses until that's been received
-    uuid = uuid.v4()
-    params = {
-      to: room.jid
-      type: 'groupchat'
-    }
-    @robot.logger.info "Joining #{room.jid} with #{uuid}"
-    @joining[uuid] = room.jid
-    @client.send new Stanza('message', params).c('body').t(uuid)
+    if process.env.HUBOT_XMPP_UUID_ON_JOIN?
+      # send a guid message and ignore any responses until that's been received
+      uuid = uuid.v4()
+      params = {
+        to: room.jid
+        type: 'groupchat'
+      }
+      @robot.logger.info "Joining #{room.jid} with #{uuid}"
+      @joining[uuid] = room.jid
+      @client.send new Stanza('message', params).c('body').t(uuid)
 
   # XMPP Leaving a room - http://xmpp.org/extensions/xep-0045.html#exit
   leaveRoom: (room) ->
@@ -258,7 +259,7 @@ class XmppBot extends Adapter
     message = body.getText()
 
     # check if this is a join guid and if so start accepting messages
-    if message of @joining
+    if process.env.HUBOT_XMPP_UUID_ON_JOIN? and message of @joining
       @robot.logger.info "Now accepting messages from #{@joining[message]}"
       @joined.push @joining[message]
 
@@ -299,7 +300,7 @@ class XmppBot extends Adapter
     user.privateChatJID = privateChatJID if privateChatJID
 
     # only process persistent chant messages if we have matched a join
-    return if stanza.attrs.type == 'groupchat' and user.room not in @joined
+    return if process.env.HUBOT_XMPP_UUID_ON_JOIN? and stanza.attrs.type == 'groupchat' and user.room not in @joined
 
     @robot.logger.debug "Received message: #{message} in room: #{user.room}, from: #{user.name}. Private chat JID is #{user.privateChatJID}"
 
