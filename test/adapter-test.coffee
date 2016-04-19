@@ -5,6 +5,7 @@ Bot = require '../src/xmpp'
 
 assert = require 'assert'
 sinon  = require 'sinon'
+uuid = require 'uuid'
 
 describe 'XmppBot', ->
   describe '#parseRooms()', ->
@@ -997,3 +998,89 @@ describe 'XmppBot', ->
 
       mock.verify()
       assert.ok bot.robot.logger.error.called
+
+  describe 'uuid_on_join', () ->
+    beforeEach ->
+      uuid['v4'] = () -> 'fake-uuid-for-testing'
+      process.env.HUBOT_XMPP_UUID_ON_JOIN = true
+
+    bot = Bot.use()
+
+    bot.client =
+      stub: 'xmpp client'
+
+    bot.robot =
+      name: 'bot'
+      logger:
+        debug: () ->
+        info: () ->
+      brain:
+        userForId: (id, options)->
+          user = {}
+          user['name'] = id
+          for k of (options or {})
+            user[k] = options[k]
+          return user
+
+    room =
+      jid: 'test@example.com'
+      password: false
+
+    it 'should call @client.send() with a uuid', (done) ->
+      bot.client.send = (message) ->
+        if message.name == 'body'
+          assert.equal message.children.length, 1
+          assert.equal message.children[0], 'fake-uuid-for-testing'
+          done()
+      bot.joinRoom room
+
+    it 'should ignore messages', (done) ->
+      stanza =
+        attrs:
+          type: 'groupchat'
+        name: 'message'
+        flag: 'ignore_me'
+      proxied = bot.readMessage
+      bot.readMessage = (message) ->
+        proxied(message)
+        if message.flag == 'ignore_me'
+          done()
+      bot.receive = (message) ->
+        throw 'no message should be received'
+      bot.read stanza
+
+    it 'listen for the uuid before responding', (done) ->
+      stanza =
+        attrs:
+          type: 'groupchat'
+          from: 'test@example.com/bot'
+        name: 'message'
+        flag: 'join_me'
+        getChild: ->
+          body =
+            getText: ->
+              'fake-uuid-for-testing'
+      proxied = bot.readMessage
+      bot.readMessage = (message) ->
+        proxied(message)
+        assert.equal true, 'test@example.com' in bot.joined
+        if message.flag == 'join_me'
+          done()
+      bot.receive = (message) ->
+        throw 'no message should be received'
+      bot.read stanza
+
+    it 'should process messages after joining', (done) ->
+      stanza =
+        attrs:
+          type: 'groupchat'
+          from: 'test@example.com/someone'
+        name: 'message'
+        getChild: ->
+          body =
+            getText: ->
+              '@bot howdy'
+      bot.receive = (message) ->
+        assert.equal message, '@bot howdy'
+        done()
+      bot.read stanza
