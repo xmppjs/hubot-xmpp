@@ -1,11 +1,14 @@
 {Adapter,Robot,TextMessage,EnterMessage,LeaveMessage} = require 'hubot'
 {JID, Stanza, Client, parse, Element} = require 'node-xmpp-client'
+uuid = require 'uuid'
 util = require 'util'
 
 class XmppBot extends Adapter
 
   reconnectTryCount: 0
   currentIqId: 1001
+  joining: []
+  joined: []
 
   constructor: ( robot ) ->
     @robot = robot
@@ -143,6 +146,17 @@ class XmppBot extends Adapter
         x.c('password').t(room.password)
       return x
 
+    if process.env.HUBOT_XMPP_UUID_ON_JOIN?
+      # send a guid message and ignore any responses until that's been received
+      uuid = uuid.v4()
+      params = {
+        to: room.jid
+        type: 'groupchat'
+      }
+      @robot.logger.info "Joining #{room.jid} with #{uuid}"
+      @joining[uuid] = room.jid
+      @client.send new Stanza('message', params).c('body').t(uuid)
+
   # XMPP Leaving a room - http://xmpp.org/extensions/xep-0045.html#exit
   leaveRoom: (room) ->
     # messageFromRoom check for joined rooms so remvove it from the list
@@ -244,6 +258,11 @@ class XmppBot extends Adapter
     from = stanza.attrs.from
     message = body.getText()
 
+    # check if this is a join guid and if so start accepting messages
+    if process.env.HUBOT_XMPP_UUID_ON_JOIN? and message of @joining
+      @robot.logger.info "Now accepting messages from #{@joining[message]}"
+      @joined.push @joining[message]
+
     if stanza.attrs.type == 'groupchat'
       # Everything before the / is the room name in groupchat JID
       [room, user] = from.split '/'
@@ -279,6 +298,9 @@ class XmppBot extends Adapter
     user.type = stanza.attrs.type
     user.room = room
     user.privateChatJID = privateChatJID if privateChatJID
+
+    # only process persistent chant messages if we have matched a join
+    return if process.env.HUBOT_XMPP_UUID_ON_JOIN? and stanza.attrs.type == 'groupchat' and user.room not in @joined
 
     @robot.logger.debug "Received message: #{message} in room: #{user.room}, from: #{user.name}. Private chat JID is #{user.privateChatJID}"
 
