@@ -148,14 +148,14 @@ class XmppBot extends Adapter
 
     if process.env.HUBOT_XMPP_UUID_ON_JOIN?
       # send a guid message and ignore any responses until that's been received
-      uuid = uuid.v4()
+      room_id = uuid.v4()
       params = {
         to: room.jid
         type: 'groupchat'
       }
-      @robot.logger.info "Joining #{room.jid} with #{uuid}"
-      @joining[uuid] = room.jid
-      @client.send new Stanza('message', params).c('body').t(uuid)
+      @robot.logger.info "Joining #{room.jid} with #{room_id}"
+      @joining[room_id] = room.jid
+      @client.send new Stanza('message', params).c('body').t(room_id)
 
   # XMPP Leaving a room - http://xmpp.org/extensions/xep-0045.html#exit
   leaveRoom: (room) ->
