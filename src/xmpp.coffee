@@ -247,6 +247,12 @@ class XmppBot extends Adapter
       @emit "completedRequest#{stanza.attrs.id}", usersInRoom
 
   readMessage: (stanza) =>
+    
+    if x = stanza.getChild('x', 'jabber:x:conference') and x?.attrs?
+      @robot.logger.debug '[joining room]', x.attrs
+      @options.rooms.push x.attrs
+      @joinRoom x.attrs
+    
     # ignore non-messages
     return if stanza.attrs.type not in ['groupchat', 'direct', 'chat']
     return if stanza.attrs.from is undefined
