@@ -67,6 +67,36 @@ describe 'XmppBot', ->
           done()
         bot.joinRoom protectedRoom
 
+  describe '#invites', ->
+
+    it 'joins when invited', (done) ->
+
+      bot = Bot.use()
+
+      bot.client =
+        stub: 'xmpp client'
+
+      bot.robot =
+        name: 'bot'
+        logger:
+          debug: () ->
+      room =
+        jid: 'test@example.com'
+        password: false
+
+      stanza = new Xmpp.Stanza 'message'
+      stanza.c 'x', {xmlns: 'jabber:x:conference', jid: room.jid, password: room.password}
+
+      bot.options = {rooms:[]}
+
+      bot.joinRoom = (r) ->
+        assert r.jid is room.jid, 'jid match'
+        assert r.password is room.password, 'password match'
+        done()
+
+      bot.readMessage.call bot, stanza
+
+
   describe '#leaveRoom()', ->
     bot = Bot.use()
     bot.client =

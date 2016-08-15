@@ -152,7 +152,7 @@ class XmppBot extends Adapter
 
   readMessage: (stanza) =>
     
-    if x = stanza.getChild('x', 'jabber:x:conference') and x?.attrs?
+    if (x = stanza.getChild('x', 'jabber:x:conference')) and x?.attrs?
       @robot.logger.debug '[joining room]', x.attrs
       @options.rooms.push x.attrs
       @joinRoom x.attrs
