@@ -76,7 +76,7 @@ class XmppBot extends Adapter
       host: options.host
       port: options.port
       legacySSL: options.legacySSL
-      preferredSaslMechanism: options.preferredSaslMechanism
+      preferred: options.preferredSaslMechanism
       disallowTLS: options.disallowTLS
     @configClient(options)
 
