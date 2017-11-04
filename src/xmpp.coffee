@@ -159,7 +159,7 @@ class XmppBot extends Adapter
 
   # XMPP Leaving a room - http://xmpp.org/extensions/xep-0045.html#exit
   leaveRoom: (room) ->
-    # messageFromRoom check for joined rooms so remvove it from the list
+    # messageFromRoom check for joined rooms so remove it from the list
     for joined, index in @options.rooms
       if joined.jid == room.jid
         @options.rooms.splice index, 1
