@@ -346,6 +346,11 @@ class XmppBot extends Adapter
         room = fromJID.bare().toString()
         return if not @messageFromRoom room
 
+        # Some servers send presence for the room itself, which needs to be
+        # ignored
+        if room is fromJID.toString()
+          return
+
         # Try to resolve the private JID
         privateChatJID = @resolvePrivateJID(stanza)
 
