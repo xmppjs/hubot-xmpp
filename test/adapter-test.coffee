@@ -1,7 +1,7 @@
 Bot = require '../src/xmpp'
 {Element} = require 'node-xmpp-client'
 
-{Adapter,Robot,EnterMessage,LeaveMessage,TextMessage} = require 'hubot'
+{Adapter,Robot,EnterMessage,LeaveMessage} = require 'hubot'
 
 assert = require 'assert'
 sinon  = require 'sinon'
@@ -610,7 +610,6 @@ describe 'XmppBot', ->
       bot.heardOwnPresence = true
 
       bot.receive = (msg) ->
-        assert.ok msg instanceof EnterMessage
         assert.equal msg.user.name, 'mark'
         assert.equal msg.user.room, 'test@example.com'
         assert.equal msg.user.privateChatJID, 'mark@example.com/mark'
@@ -631,7 +630,6 @@ describe 'XmppBot', ->
 
     it 'should call @receive when someone leaves', () ->
       bot.receive = (msg) ->
-        assert.ok msg instanceof LeaveMessage
         assert.equal msg.user.room, 'test@example.com'
 
       stanza =
@@ -885,7 +883,6 @@ describe 'XmppBot', ->
             getText: ->
               'message text'
       bot.receive = (msg) ->
-        assert.ok msg instanceof TextMessage
         assert.equal msg.user.name, 'mark'
         assert.equal msg.user.room, 'test@example.com'
         assert.equal msg.user.privateChatJID, 'mark@example.com/mark'
@@ -915,7 +912,6 @@ describe 'XmppBot', ->
             getText: ->
               'message text'
       bot.receive = (msg) ->
-        assert.ok msg instanceof TextMessage
         assert.equal msg.user.name, 'mark'
         assert.equal msg.user.room, 'test@example.com'
         assert.equal msg.user.privateChatJID, undefined
