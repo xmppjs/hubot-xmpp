@@ -23,6 +23,12 @@ class XmppBot extends Adapter {
     // Store the room JID to private JID map.
     // Key is the room JID, value is the private JID
     this.roomToPrivateJID = {};
+
+    this.error = this.error.bind(this)
+    this.online = this.online.bind(this)
+    this.offline = this.offline.bind(this)
+    this.read = this.read.bind(this)
+    this.ping = this.ping.bind(this)
   }
 
   run() {
