@@ -2,7 +2,7 @@
 
 Connects Hubot to your XMPP network
 
-[![Build Status](https://secure.travis-ci.org/markstory/hubot-xmpp.png?branch=master)](http://travis-ci.org/markstory/hubot-xmpp)
+[![Build Status](https://secure.travis-ci.org/xmppjs/hubot-xmpp.png?branch=master)](http://travis-ci.org/xmppjs/hubot-xmpp)
 
 ## Setup
 
@@ -44,13 +44,15 @@ side effect is that the bot ignores commands of type `/^command/i`.
 
 ## Installation
 
-After installing `hubot` with npm, you should create a standalone bot:
+Create a standalone hubot with xmpp adapter:
 
-	hubot -c ./my-bot
+```sh
+mkdir -p ./my-bot
+cd ./my-bot
+npx -p yo -p generator-hubot -c 'yo hubot --adapter=xmpp'
+```
 
-After creating your new bot, you should modify the `package.json` and add the
-`hubot-xmpp` dependency. After running `npm install` you should be ready to configure
-and start up your bot.
+See also https://hubot.github.com/docs/ .
 
 ## Group chat vs private JID
 
