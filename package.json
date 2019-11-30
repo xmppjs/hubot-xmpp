@@ -19,7 +19,7 @@
   "scripts": {
     "test": "mocha test/"
   },
-  "main": "./src/xmpp",
+  "main": "./adapter",
   "engines": {
     "node": ">= 8.0.0"
   },

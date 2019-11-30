@@ -8,7 +8,7 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const {Adapter,Robot,TextMessage,EnterMessage,LeaveMessage} = require('hubot/es2015');
+const {Adapter,TextMessage,EnterMessage,LeaveMessage} = require('hubot/es2015');
 const {JID, Stanza, Client, parse, Element} = require('node-xmpp-client');
 const uuid = require('uuid/v4');
 const util = require('util');

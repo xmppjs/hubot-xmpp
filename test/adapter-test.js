@@ -1,10 +1,8 @@
 'use strict';
 
-const Bot = require('../src/xmpp');
+const Bot = require('..');
+
 const {Element} = require('node-xmpp-client');
-
-const {Adapter,Robot,EnterMessage,LeaveMessage} = require('hubot');
-
 const assert = require('assert');
 const sinon  = require('sinon');
 
