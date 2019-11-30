@@ -2,10 +2,10 @@
 
 REMOTE=origin
 
-TESTS = test/*.coffee
+TESTS = test/*.js
 
 test:
-	./node_modules/.bin/mocha --compilers coffee:coffee-script $(TESTS)
+	./node_modules/.bin/mocha $(TESTS)
 
 release: bump-version
 	@echo "Tagging $(VERSION)"

@@ -1317,7 +1317,7 @@ describe('XmppBot', function() {
         name: 'message',
         flag: 'ignore_me'
       };
-      const proxied = bot.readMessage;
+      const proxied = bot.readMessage.bind(bot);
       bot.readMessage = function(message) {
         proxied(message);
         if (message.flag === 'ignore_me') {
@@ -1347,7 +1347,7 @@ describe('XmppBot', function() {
           };
         }
       };
-      const proxied = bot.readMessage;
+      const proxied = bot.readMessage.bind(bot);
       bot.readMessage = function(message) {
         proxied(message);
         assert.equal(true, Array.from(bot.joined).includes('test@example.com'));

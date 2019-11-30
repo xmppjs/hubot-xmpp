@@ -9,38 +9,14 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const {Adapter,Robot,TextMessage,EnterMessage,LeaveMessage} = require('hubot');
+const {Adapter,Robot,TextMessage,EnterMessage,LeaveMessage} = require('hubot/es2015');
 const {JID, Stanza, Client, parse, Element} = require('node-xmpp-client');
 const uuid = require('uuid');
 const util = require('util');
 
 class XmppBot extends Adapter {
-  static initClass() {
-  
-    this.prototype.reconnectTryCount = 0;
-    this.prototype.currentIqId = 1001;
-    this.prototype.joining = [];
-    this.prototype.joined = [];
-  }
-
   constructor( robot ) {
-    {
-      // Hack: trick Babel/TypeScript into allowing this before super.
-      if (false) { super(); }
-      let thisFn = (() => { return this; }).toString();
-      let thisName = thisFn.match(/return (?:_assertThisInitialized\()*(\w+)\)*;/)[1];
-      eval(`${thisName} = this;`);
-    }
-    this.error = this.error.bind(this);
-    this.online = this.online.bind(this);
-    this.ping = this.ping.bind(this);
-    this.read = this.read.bind(this);
-    this.readIq = this.readIq.bind(this);
-    this.readMessage = this.readMessage.bind(this);
-    this.readPresence = this.readPresence.bind(this);
-    this.offline = this.offline.bind(this);
-    this.checkCanStart = this.checkCanStart.bind(this);
-    this.robot = robot;
+    super(robot)
 
     // Flag to log a warning message about group chat configuration only once
     this.anonymousGroupChatWarningLogged = false;
@@ -48,9 +24,6 @@ class XmppBot extends Adapter {
     // Store the room JID to private JID map.
     // Key is the room JID, value is the private JID
     this.roomToPrivateJID = {};
-
-    // http://stackoverflow.com/a/646643
-    if (String.prototype.startsWith == null) { String.prototype.startsWith = function(s) { return this.slice(0, s.length) === s; }; }
   }
 
   run() {
@@ -592,7 +565,11 @@ class XmppBot extends Adapter {
     }
   }
 }
-XmppBot.initClass();
+
+XmppBot.prototype.reconnectTryCount = 0;
+XmppBot.prototype.currentIqId = 1001;
+XmppBot.prototype.joining = [];
+XmppBot.prototype.joined = [];
 
 exports.use = robot => new XmppBot(robot);
 
