@@ -15,10 +15,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git://github.com/markstory/hubot-xmpp.git"
+    "url": "git://github.com/xmppjs/hubot-xmpp.git"
   },
   "bugs": {
-    "url": "http://github.com/markstory/hubot-xmpp/issues"
+    "url": "http://github.com/xmppjs/hubot-xmpp/issues"
   },
   "scripts": {
     "test": "make test"
