@@ -4,7 +4,7 @@
   "repository": "github:xmppjs/hubot-xmpp.js",
   "homepage": "https://github.com/xmppjs/hubot-xmpp",
   "bugs": "http://github.com/xmppjs/hubot-xmpp/issues",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "author": {
     "name": "Mark Story",
     "email": "mark@mark-story.com",
