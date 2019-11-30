@@ -65,17 +65,19 @@ hubot-xmpp will then automatically resolve the JID to a private
 chat JID, and private message the sender.
 
 If you need to get the private chat JID, you can use
-'msg.envelope.user.privateChatJid' where msg is the parameter of hubot's
-"route" callback.
+`msg.envelope.user.privateChatJid` where `msg` is the parameter of hubot's
+`route` callback.
 
 Example:
 
-```coffeescript
-robot.respond /talk to me$/i, ( msg ) ->
-  # Simply reply
-  msg.reply "Hello #{msg.envelope.user.name}. Your private JID is #{msg.envelope.user.privateChatJID}"
+```js
+robot.respond(/talk to me$/i, msg => {
+  // Simply reply
+  msg.reply(`Hello ${msg.envelope.user.name}. Your private JID is ${msg.envelope.user.privateChatJID}`);
+});
 
-robot.respond /talk to me in private$/i, ( msg ) ->
-  msg.envelope.user.type = 'direct'
-  msg.send "Hey #{msg.envelope.user.name}! You told me in room #{msg.envelope.user.room} to talk to you."
+robot.respond(/talk to me in private$/i, msg => {
+  msg.envelope.user.type = 'direct';
+  msg.send(`Hey ${msg.envelope.user.name}! You told me in room ${msg.envelope.user.room} to talk to you.`);
+});
 ```
