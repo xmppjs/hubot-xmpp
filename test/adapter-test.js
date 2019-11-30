@@ -1,9 +1,5 @@
-/*
- * decaffeinate suggestions:
- * DS101: Remove unnecessary use of Array.from
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
+'use strict';
+
 const Bot = require('../src/xmpp');
 const {Element} = require('node-xmpp-client');
 
@@ -17,7 +13,7 @@ describe('XmppBot', function() {
   describe('#parseRooms()', function() {
     const bot = Bot.use();
 
-    return it('should split passwords', function() {
+    it('should split passwords', function() {
       const rooms = ['secretroom:password', 'room'];
       const result = bot.parseRooms(rooms);
 
@@ -26,7 +22,7 @@ describe('XmppBot', function() {
       assert.equal(result[0].password, 'password');
 
       assert.equal(result[1].jid, 'room');
-      return assert.equal(result[1].password, '');
+      assert.equal(result[1].password, '');
     });
   });
 
@@ -49,7 +45,7 @@ describe('XmppBot', function() {
 
     it('should call @client.send()', function(done) {
       bot.client.send = message => done();
-      return bot.joinRoom(room);
+      bot.joinRoom(room);
     });
 
     it('should call @client.send() with the appropriate protocol message', function(done) {
@@ -63,26 +59,26 @@ describe('XmppBot', function() {
         assert.equal(message.children.length, 1);
         assert.equal(message.children[0].name, 'history');
         assert.equal(message.children[0].attrs.seconds, 1);
-        return done();
+        done();
       };
-      return bot.joinRoom(room);
+      bot.joinRoom(room);
     });
 
-    return describe('and the room requires a password', function() {
+    describe('and the room requires a password', function() {
       const protectedRoom = {
         jid: 'test@example.com',
         password: 'password'
       };
 
-      return it('should call @client.send() with the password', function(done) {
+      it('should call @client.send() with the password', function(done) {
         bot.client.send = function(message) {
           assert.equal(message.name, 'x');
           assert.equal(message.children.length, 2);
           assert.equal(message.children[1].name, 'password');
           assert.equal(message.children[1].children[0], protectedRoom.password);
-          return done();
+          done();
         };
-        return bot.joinRoom(protectedRoom);
+        bot.joinRoom(protectedRoom);
       });
     });
   });
@@ -100,7 +96,7 @@ describe('XmppBot', function() {
     beforeEach(function() {
       bot.options =
         {rooms: [room]};
-      return bot.robot = {
+      bot.robot = {
         name: 'bot',
         logger: {
           debug() {}
@@ -108,13 +104,13 @@ describe('XmppBot', function() {
       };
     });
 
-    return it('should call @client.send() with a proper ping element', function(done) {
+    it('should call @client.send() with a proper ping element', function(done) {
       bot.client.send = function(message) {
         assert.equal(message.name, 'iq');
         assert.equal(message.attrs.type, 'get');
-        return done();
+        done();
       };
-      return bot.ping();
+      bot.ping();
     });
   });
 
@@ -131,7 +127,7 @@ describe('XmppBot', function() {
     beforeEach(function() {
       bot.options =
         {rooms: [room]};
-      return bot.robot = {
+      bot.robot = {
         name: 'bot',
         logger: {
           debug() {}
@@ -142,31 +138,31 @@ describe('XmppBot', function() {
     it('should call @client.send()', function(done) {
       bot.client.send = message => done();
       bot.leaveRoom(room);
-      return assert.deepEqual([], bot.options.rooms);
+      assert.deepEqual([], bot.options.rooms);
     });
 
     it('should call @client.send() with a presence element', function(done) {
       bot.client.send = function(message) {
         assert.equal(message.name, 'presence');
-        return done();
+        done();
       };
-      return bot.leaveRoom(room);
+      bot.leaveRoom(room);
     });
 
     it('should call @client.send() with the room and bot name', function(done) {
       bot.client.send = function(message) {
         assert.equal(message.attrs.to, `${room.jid}/${bot.robot.name}`);
-        return done();
+        done();
       };
-      return bot.leaveRoom(room);
+      bot.leaveRoom(room);
     });
 
-    return it('should call @client.send() with type unavailable', function(done) {
+    it('should call @client.send() with type unavailable', function(done) {
       bot.client.send = function(message) {
         assert.equal(message.attrs.type, 'unavailable');
-        return done();
+        done();
       };
-      return bot.leaveRoom(room);
+      bot.leaveRoom(room);
     });
   });
 
@@ -182,9 +178,7 @@ describe('XmppBot', function() {
     bot.robot = {
       name: 'bot',
       userForId() {
-        let user;
-        return user =
-          {id: 1};
+        return {id: 1};
       },
       logger: {
         debug() {}
@@ -211,12 +205,12 @@ describe('XmppBot', function() {
         assert.equal(pong.attrs.from, stanza.attrs.to);
         assert.equal(pong.attrs.id, stanza.attrs.id);
         assert.equal(pong.attrs.type, 'result');
-        return done();
+        done();
       };
-      return bot.readIq(stanza);
+      bot.readIq(stanza);
     });
 
-    return it('should parse room query iqs for users in the room', function(done) {
+    it('should parse room query iqs for users in the room', function(done) {
       stanza.attrs.id = 'get_users_in_room_8139nj32ma';
       stanza.attrs.from = 'test@example.com';
       const userItems = [
@@ -225,10 +219,10 @@ describe('XmppBot', function() {
       ];
       stanza.children = [ {children: userItems} ];
       bot.on(`completedRequest${stanza.attrs.id}`, function(usersInRoom) {
-        assert.deepEqual(usersInRoom, (Array.from(userItems).map((item) => item.attrs.name)));
-        return done();
+        assert.deepEqual(usersInRoom, userItems.map((item) => item.attrs.name));
+        done();
       });
-      return bot.readIq(stanza);
+      bot.readIq(stanza);
     });
   });
 
@@ -269,8 +263,7 @@ describe('XmppBot', function() {
         from: 'test@example.com/ernie'
       },
       getChild() {
-        let body;
-        return body = {
+        return {
           getText() {
             return 'message text';
           }
@@ -280,7 +273,7 @@ describe('XmppBot', function() {
 
     it('should refuse types', function() {
       stanza.attrs.type = 'other';
-      return assert.strictEqual(bot.readMessage(stanza), undefined);
+      assert.strictEqual(bot.readMessage(stanza), undefined);
     });
 
     it('should ignore messages from self', function() {
@@ -288,24 +281,24 @@ describe('XmppBot', function() {
       // Only need to ignore message from self in groupchat
       stanza.attrs.type = 'groupchat';
       stanza.attrs.from = 'room@example.com/bot';
-      return assert.strictEqual(bot.readMessage(stanza), undefined);
+      assert.strictEqual(bot.readMessage(stanza), undefined);
     });
 
     it('should ignore messages from the room', function() {
       stanza.attrs.type = 'groupchat';
       stanza.attrs.from = 'test@example.com';
-      return assert.strictEqual(bot.readMessage(stanza), undefined);
+      assert.strictEqual(bot.readMessage(stanza), undefined);
     });
 
     it('should ignore messages with no body', function() {
       stanza.getChild = () => '';
-      return assert.strictEqual(bot.readMessage(stanza), undefined);
+      assert.strictEqual(bot.readMessage(stanza), undefined);
     });
 
     it('should ignore messages we sent part 2', function() {
       stanza.attrs.type = 'groupchat';
       stanza.attrs.from = 'test@example.com/bot';
-      return assert.strictEqual(bot.readMessage(stanza), undefined);
+      assert.strictEqual(bot.readMessage(stanza), undefined);
     });
 
     it('should send a message for private message', function(done) {
@@ -315,9 +308,9 @@ describe('XmppBot', function() {
         assert.equal(message.user.privateChatJID, 'test@example.com/ernie');
         assert.equal(message.user.room, undefined);
         assert.equal(message.text, 'message text');
-        return done();
+        done();
       };
-      return bot.readMessage(stanza);
+      bot.readMessage(stanza);
     });
 
     it('should send a message (with bot name prefix added) for private message', function(done) {
@@ -328,15 +321,14 @@ describe('XmppBot', function() {
         assert.equal(message.user.privateChatJID, 'test@example.com/ernie');
         assert.equal(message.user.room, undefined);
         assert.equal(message.text, 'bot message text');
-        return done();
+        done();
       };
-      return bot.readMessage(stanza);
+      bot.readMessage(stanza);
     });
 
     it('should send a message (with bot name prefix) for private message (with bot name prefix)', function(done) {
       stanza.getChild = function() {
-          let body;
-          return body = {
+          return {
             getText() {
               return 'bot message text';
             }
@@ -349,16 +341,15 @@ describe('XmppBot', function() {
         assert.equal(message.user.privateChatJID, 'test@example.com/ernie');
         assert.equal(message.user.room, undefined);
         assert.equal(message.text, 'bot message text');
-        return done();
+        done();
       };
-      return bot.readMessage(stanza);
+      bot.readMessage(stanza);
     });
 
     it('should send a message (with alias prefix) for private message (with alias prefix)', function(done) {
       process.env.HUBOT_ALIAS = ':';
       stanza.getChild = function() {
-          let body;
-          return body = {
+          return {
             getText() {
               return ':message text';
             }
@@ -371,21 +362,21 @@ describe('XmppBot', function() {
         assert.equal(message.user.privateChatJID, 'test@example.com/ernie');
         assert.equal(message.user.room, undefined);
         assert.equal(message.text, ':message text');
-        return done();
+        done();
       };
-      return bot.readMessage(stanza);
+      bot.readMessage(stanza);
     });
 
-    return it('should send a message for groupchat', function(done) {
+    it('should send a message for groupchat', function(done) {
       stanza.attrs.type = 'groupchat';
       bot.receive = function(message) {
         assert.equal(message.user.type, 'groupchat');
         assert.equal(message.user.name, 'ernie');
         assert.equal(message.user.room, 'test@example.com');
         assert.equal(message.text, 'message text');
-        return done();
+        done();
       };
-      return bot.readMessage(stanza);
+      bot.readMessage(stanza);
     });
   });
 
@@ -400,18 +391,18 @@ describe('XmppBot', function() {
     it('should call send()', function(done) {
       bot.send = function(envelope, message) {
         assert.equal(message, 'mark: one');
-        return done();
+        done();
       };
-      return bot.reply(envelope, 'one');
+      bot.reply(envelope, 'one');
     });
 
-    return it('should call send() multiple times', function(done) {
+    it('should call send() multiple times', function(done) {
       let called = 0;
       bot.send = function(envelope, message) {
         called += 1;
-        if (called === 2) { return done(); }
+        if (called === 2) { done(); }
       };
-      return bot.reply(envelope, 'one', 'two');
+      bot.reply(envelope, 'one', 'two');
     });
   });
 
@@ -431,17 +422,17 @@ describe('XmppBot', function() {
       bot.client.send = function(message) {
         assert.equal(message.parent.attrs.to, envelope.room);
         assert.equal('test', message.children[0]);
-        return done();
+        done();
       };
-      return bot.topic(envelope, 'test');
+      bot.topic(envelope, 'test');
     });
 
-    return it('should call @client.send() with newlines', function(done) {
+    it('should call @client.send() with newlines', function(done) {
       bot.client.send = function(message) {
         assert.equal("one\ntwo", message.children[0]);
-        return done();
+        done();
       };
-      return bot.topic(envelope, 'one', 'two');
+      bot.topic(envelope, 'one', 'two');
     });
   });
 
@@ -474,21 +465,21 @@ describe('XmppBot', function() {
         assert.equal(message.attrs.type, 'get');
         assert.equal(message.children[0].name, 'query');
         assert.equal(message.children[0].attrs.xmlns, 'http://jabber.org/protocol/disco#items');
-        return done();
+        done();
       };
-      return bot.getUsersInRoom(room, function() {});
+      bot.getUsersInRoom(room, function() {});
     });
 
-    return it('should call callback on receiving users', function(done) {
+    it('should call callback on receiving users', function(done) {
       const users  = ['mark', 'anup'];
       const requestId = 'get_users_in_room_8139nj32ma';
       bot.client.send = function() {};
       const callback = function(usersInRoom) {
         assert.deepEqual(usersInRoom, users);
-        return done();
+        done();
       };
       bot.getUsersInRoom(room, callback, requestId);
-      return bot.emit(`completedRequest${requestId}`, users);
+      bot.emit(`completedRequest${requestId}`, users);
     });
   });
 
@@ -512,14 +503,14 @@ describe('XmppBot', function() {
     const invitee = 'anup@example.com';
     const reason = 'Inviting to test';
 
-    return it('should call @client.send()', function(done) {
+    it('should call @client.send()', function(done) {
       bot.client.send = function(message) {
         assert.equal(message.attrs.to, invitee);
         assert.equal(message.children[0].attrs.jid, room.jid);
         assert.equal(message.children[0].attrs.reason, reason);
-        return done();
+        done();
       };
-      return bot.sendInvite(room, invitee, reason);
+      bot.sendInvite(room, invitee, reason);
     });
   });
 
@@ -540,21 +531,21 @@ describe('XmppBot', function() {
     it('should handle ECONNREFUSED', function(done) {
       bot.robot.logger.error = function() {
         assert.ok('error logging happened.');
-        return done();
+        done();
       };
       const error =
         {code: 'ECONNREFUSED'};
-      return bot.error(error);
+      bot.error(error);
     });
 
-    return it('should handle system-shutdown', function(done) {
+    it('should handle system-shutdown', function(done) {
       bot.robot.logger.error = function() {
         assert.ok('exit was called');
-        return done();
+        done();
       };
       const error =
         {children: [ {name: 'system-shutdown'} ]};
-      return bot.error(error);
+      bot.error(error);
     });
   });
 
@@ -571,7 +562,7 @@ describe('XmppBot', function() {
         const text = String(message);
         assert.ok(text.indexOf('xmpp error') > 0);
         assert.ok(text.indexOf('fail') > 0);
-        return done();
+        done();
       };
       const stanza = {
         attrs: {
@@ -581,7 +572,7 @@ describe('XmppBot', function() {
           return 'fail';
         }
       };
-      return bot.read(stanza);
+      bot.read(stanza);
     });
 
     it('should delegate to readMessage', function(done) {
@@ -593,12 +584,12 @@ describe('XmppBot', function() {
       };
       bot.readMessage = function(arg) {
         assert.equal(arg.name, stanza.name);
-        return done();
+        done();
       };
-      return bot.read(stanza);
+      bot.read(stanza);
     });
 
-    return it('should delegate to readPresence', function(done) {
+    it('should delegate to readPresence', function(done) {
       const stanza = {
         attrs: {
           type: 'chat'
@@ -607,9 +598,9 @@ describe('XmppBot', function() {
       };
       bot.readPresence = function(arg) {
         assert.equal(arg.name, stanza.name);
-        return done();
+        done();
       };
-      return bot.read(stanza);
+      bot.read(stanza);
     });
   });
 
@@ -638,7 +629,7 @@ describe('XmppBot', function() {
         username: 'bot',
         rooms: [ {jid: 'test@example.com', password: false} ]
       };
-      return bot.client =
+      bot.client =
         {send() {}};
     });
 
@@ -655,9 +646,9 @@ describe('XmppBot', function() {
         assert.equal(el.attrs.from, stanza.attrs.to);
         assert.equal(el.attrs.to, stanza.attrs.from);
         assert.equal(el.attrs.type, 'subscribed');
-        return done();
+        done();
       };
-      return bot.readPresence(stanza);
+      bot.readPresence(stanza);
     });
 
     it('should handle probe types', function(done) {
@@ -673,9 +664,9 @@ describe('XmppBot', function() {
         assert.equal(el.attrs.from, stanza.attrs.to);
         assert.equal(el.attrs.to, stanza.attrs.from);
         assert.equal(el.attrs.type, undefined);
-        return done();
+        done();
       };
-      return bot.readPresence(stanza);
+      bot.readPresence(stanza);
     });
 
     it('should do nothing on missing item in available type', function() {
@@ -693,7 +684,7 @@ describe('XmppBot', function() {
         return user;
       };
       bot.readPresence(stanza);
-      return robot.brain.userForId = tmp_userForId;
+      robot.brain.userForId = tmp_userForId;
     });
 
     it('should not trigger @recieve for presences coming from a room the bot is not in', function() {
@@ -709,7 +700,7 @@ describe('XmppBot', function() {
           id: '12345'
         }
       };
-      return bot.readPresence(stanza);
+      bot.readPresence(stanza);
     });
 
     it('should set @heardOwnPresence when the bot presence is received', function() {
@@ -720,10 +711,9 @@ describe('XmppBot', function() {
           from: 'test@example.com/bot'
         },
         getChild() {
-          let stub;
-          return stub = {
+          return {
             getChild() {
-              return stub = {
+              return {
                 attrs: {
                   jid: 'bot@example.com'
                 }
@@ -740,10 +730,9 @@ describe('XmppBot', function() {
           from: 'test@example.com/2578936351142164331380805'
         },
         getChild() {
-          let stub;
-          return stub = {
+          return {
             getText() {
-              return stub = 'bot';
+              return 'bot';
             }
           };
         }
@@ -753,7 +742,7 @@ describe('XmppBot', function() {
       assert.ok(bot.heardOwnPresence);
       bot.heardOwnPresence = false;
       bot.readPresence(stanza2);
-      return assert.ok(bot.heardOwnPresence);
+      assert.ok(bot.heardOwnPresence);
     });
 
     // FIXME decaffeinate failed to compile these
@@ -800,7 +789,7 @@ describe('XmppBot', function() {
 
     //   bot.readPresence stanza
 
-    return it('should call @receive when someone leaves', function() {
+    it('should call @receive when someone leaves', function() {
       bot.receive = msg => assert.equal(msg.user.room, 'test@example.com');
 
       const stanza = {
@@ -811,7 +800,7 @@ describe('XmppBot', function() {
         }
       };
 
-      return bot.readPresence(stanza);
+      bot.readPresence(stanza);
     });
   });
 
@@ -822,8 +811,7 @@ describe('XmppBot', function() {
       rooms: [ {jid:'test@example.com', password: false} ]
     };
 
-    bot.client =
-      {send() {}};
+    bot.client = {send() {}};
 
     bot.robot = {
       logger: {
@@ -843,10 +831,10 @@ describe('XmppBot', function() {
         assert.equal(msg.parent.attrs.to, 'test@example.com');
         assert.equal(msg.parent.attrs.type, 'groupchat');
         assert.equal(msg.getText(), 'testing');
-        return done();
+        done();
       };
 
-      return bot.send(envelope, 'testing');
+      bot.send(envelope, 'testing');
     });
 
     it('should send messages directly when message was private', function(done) {
@@ -863,10 +851,10 @@ describe('XmppBot', function() {
         assert.equal(msg.parent.attrs.to, 'mark@example.com');
         assert.equal(msg.parent.attrs.type, 'direct');
         assert.equal(msg.getText(), 'testing');
-        return done();
+        done();
       };
 
-      return bot.send(envelope, 'testing');
+      bot.send(envelope, 'testing');
     });
 
     it('should send messages directly when message was from groupchat and real JID was provided', function(done) {
@@ -883,10 +871,10 @@ describe('XmppBot', function() {
         assert.equal(msg.parent.attrs.to, 'mark@example.com');
         assert.equal(msg.parent.attrs.type, 'direct');
         assert.equal(msg.getText(), 'testing');
-        return done();
+        done();
       };
 
-      return bot.send(envelope, 'testing');
+      bot.send(envelope, 'testing');
     });
 
     it('should send a message to private room JID when message was from groupchat and real JID was not provided', function(done) {
@@ -903,10 +891,10 @@ describe('XmppBot', function() {
         assert.equal(msg.parent.attrs.to, 'room@example.com/mark');
         assert.equal(msg.parent.attrs.type, 'direct');
         assert.equal(msg.getText(), 'testing');
-        return done();
+        done();
       };
 
-      return bot.send(envelope, 'testing');
+      bot.send(envelope, 'testing');
     });
 
     it('should send messages to the room', function(done) {
@@ -922,10 +910,10 @@ describe('XmppBot', function() {
         assert.equal(msg.parent.attrs.to, 'test@example.com');
         assert.equal(msg.parent.attrs.type, 'groupchat');
         assert.equal(msg.getText(), 'testing');
-        return done();
+        done();
       };
 
-      return bot.send(envelope, 'testing');
+      bot.send(envelope, 'testing');
     });
 
     it('should accept ltx.Element objects as messages', function(done) {
@@ -944,13 +932,13 @@ describe('XmppBot', function() {
         assert.equal(msg.root().attrs.to, 'test@example.com');
         assert.equal(msg.root().attrs.type, 'groupchat');
         assert.equal(msg.root().getText(), el.root().getText());
-        return done();
+        done();
       };
 
-      return bot.send(envelope, el);
+      bot.send(envelope, el);
     });
 
-    return it('should send XHTML messages to the room', function(done) {
+    it('should send XHTML messages to the room', function(done) {
       const envelope = {
         user: {
           name: 'mark',
@@ -972,10 +960,10 @@ describe('XmppBot', function() {
         assert.equal(msg.children[0].attrs.style, 'color: #0000ff;');
         assert.equal(msg.children[0].getText(), 'testing');
 
-        return done();
+        done();
       };
 
-      return bot.send(envelope, "<p><span style='color: #0000ff;'>testing</span></p>");
+      bot.send(envelope, "<p><span style='color: #0000ff;'>testing</span></p>");
     });
   });
 
@@ -998,7 +986,7 @@ describe('XmppBot', function() {
         send() {}
       };
 
-      return bot.robot = {
+      bot.robot = {
         name: 'bert',
         logger: {
           debug() {},
@@ -1011,7 +999,7 @@ describe('XmppBot', function() {
       let callCount = 0;
       bot.on('connected', function() {
         assert.equal(callCount, expected.length, 'Call count is wrong');
-        return done();
+        done();
       });
 
       var expected = [
@@ -1019,33 +1007,33 @@ describe('XmppBot', function() {
           const root = msg.tree();
           assert.equal('presence', msg.name, 'Element name is incorrect');
           const nick = root.getChild('nick');
-          return assert.equal('bert', nick.getText());
+          assert.equal('bert', nick.getText());
         }
         ,
         function(msg) {
           const root = msg.tree();
           assert.equal('presence', root.name, 'Element name is incorrect');
-          return assert.equal("test@example.com/bert", root.attrs.to, 'Msg sent to wrong room');
+          assert.equal("test@example.com/bert", root.attrs.to, 'Msg sent to wrong room');
         }
       ];
 
       bot.client.send = function(msg) {
         if (expected[callCount]) { expected[callCount](msg); }
-        return callCount++;
+        callCount++;
       };
 
-      return bot.online();
+      bot.online();
     });
 
-    return it('should emit reconnected when connected', function(done) {
+    it('should emit reconnected when connected', function(done) {
       bot.connected = true;
 
       bot.on('reconnected', function() {
         assert.ok(bot.connected);
-        return done();
+        done();
       });
 
-      return bot.online();
+      bot.online();
     });
   });
 
@@ -1064,7 +1052,7 @@ describe('XmppBot', function() {
       bot.client =
         {send() {}};
 
-      return bot.robot = {
+      bot.robot = {
         name: 'bot',
         on() {},
         brain: {
@@ -1096,10 +1084,9 @@ describe('XmppBot', function() {
           from: 'test@example.com/mark'
         },
         getChild() {
-          let stub;
-          return stub = {
+          return {
             getChild() {
-              return stub = {
+              return {
                 attrs: {
                   jid: 'mark@example.com/mark'
                 }
@@ -1117,8 +1104,7 @@ describe('XmppBot', function() {
           from: 'test@example.com/mark'
         },
         getChild() {
-          let body;
-          return body = {
+          return {
             getText() {
               return 'message text';
             }
@@ -1129,12 +1115,12 @@ describe('XmppBot', function() {
         assert.equal(msg.user.name, 'mark');
         assert.equal(msg.user.room, 'test@example.com');
         assert.equal(msg.user.privateChatJID, 'mark@example.com/mark');
-        return done();
+        done();
       };
-      return bot.readMessage(stanza);
+      bot.readMessage(stanza);
     });
 
-    return it('should not fail when presence does not contain http://jabber.org/protocol/muc#user', function(done) {
+    it('should not fail when presence does not contain http://jabber.org/protocol/muc#user', function(done) {
       // Send presence stanza without real jid subelement
       bot.receive = function(msg) {
       };
@@ -1157,8 +1143,7 @@ describe('XmppBot', function() {
           from: 'test@example.com/mark'
         },
         getChild() {
-          let body;
-          return body = {
+          return {
             getText() {
               return 'message text';
             }
@@ -1169,9 +1154,9 @@ describe('XmppBot', function() {
         assert.equal(msg.user.name, 'mark');
         assert.equal(msg.user.room, 'test@example.com');
         assert.equal(msg.user.privateChatJID, undefined);
-        return done();
+        done();
       };
-      return bot.readMessage(stanza);
+      bot.readMessage(stanza);
     });
   });
 
@@ -1184,7 +1169,7 @@ describe('XmppBot', function() {
     beforeEach(function() {
       clock = sinon.useFakeTimers();
       bot = Bot.use();
-      return bot.client = {
+      bot.client = {
         connection: {
           socket: {}
         },
@@ -1202,10 +1187,10 @@ describe('XmppBot', function() {
       bot.configClient(options);
 
       clock.tick(options.keepaliveInterval);
-      return assert(bot.ping.called);
+      assert(bot.ping.called);
     });
 
-    return it('should set event listeners', function() {
+    it('should set event listeners', function() {
       bot.client.connection.socket.setTimeout = function() {};
 
       const onCalls = [];
@@ -1213,7 +1198,7 @@ describe('XmppBot', function() {
       bot.configClient(options);
 
       const expected = ['error', 'online', 'offline', 'stanza', 'end'];
-      return assert.deepEqual(onCalls, expected);
+      assert.deepEqual(onCalls, expected);
     });
   });
 
@@ -1230,28 +1215,28 @@ describe('XmppBot', function() {
       };
       bot.client =
         {removeListener() {}};
-      return clock = sinon.useFakeTimers();
+      clock = sinon.useFakeTimers();
     });
 
     afterEach(function() {
       clock.restore();
-      if (mock) { return mock.restore(); }
+      if (mock) { mock.restore(); }
     });
 
     it('should attempt a reconnect and increment retry count', function(done) {
       bot.makeClient = function() {
         assert.ok(true, 'Attempted to make a new client');
-        return done();
+        done();
       };
 
       assert.equal(0, bot.reconnectTryCount);
       bot.options = {reconnectTry: 5};
       bot.reconnect();
       assert.equal(1, bot.reconnectTryCount, 'No time elapsed');
-      return clock.tick(5001);
+      clock.tick(5001);
     });
 
-    return it('should exit after 5 tries', function() {
+    it('should exit after 5 tries', function() {
       mock = sinon.mock(process);
       mock.expects('exit').once();
 
@@ -1260,14 +1245,14 @@ describe('XmppBot', function() {
       bot.reconnect();
 
       mock.verify();
-      return assert.ok(bot.robot.logger.error.called);
+      assert.ok(bot.robot.logger.error.called);
     });
   });
 
-  return describe('uuid_on_join', function() {
+  describe('uuid_on_join', function() {
     beforeEach(function() {
       uuid['v4'] = () => 'fake-uuid-for-testing';
-      return process.env.HUBOT_XMPP_UUID_ON_JOIN = true;
+      process.env.HUBOT_XMPP_UUID_ON_JOIN = true;
     });
 
     const bot = Bot.use();
@@ -1303,10 +1288,10 @@ describe('XmppBot', function() {
         if (message.name === 'body') {
           assert.equal(message.children.length, 1);
           assert.equal(message.children[0], 'fake-uuid-for-testing');
-          return done();
+          done();
         }
       };
-      return bot.joinRoom(room);
+      bot.joinRoom(room);
     });
 
     it('should ignore messages', function(done) {
@@ -1321,13 +1306,13 @@ describe('XmppBot', function() {
       bot.readMessage = function(message) {
         proxied(message);
         if (message.flag === 'ignore_me') {
-          return done();
+          done();
         }
       };
       bot.receive = function(message) {
         throw 'no message should be received';
       };
-      return bot.read(stanza);
+      bot.read(stanza);
     });
 
     it('listen for the uuid before responding', function(done) {
@@ -1339,8 +1324,7 @@ describe('XmppBot', function() {
         name: 'message',
         flag: 'join_me',
         getChild() {
-          let body;
-          return body = {
+          return {
             getText() {
               return 'fake-uuid-for-testing';
             }
@@ -1350,18 +1334,18 @@ describe('XmppBot', function() {
       const proxied = bot.readMessage.bind(bot);
       bot.readMessage = function(message) {
         proxied(message);
-        assert.equal(true, Array.from(bot.joined).includes('test@example.com'));
+        assert.equal(true, bot.joined.includes('test@example.com'));
         if (message.flag === 'join_me') {
-          return done();
+          done();
         }
       };
       bot.receive = function(message) {
         throw 'no message should be received';
       };
-      return bot.read(stanza);
+      bot.read(stanza);
     });
 
-    return it('should process messages after joining', function(done) {
+    it('should process messages after joining', function(done) {
       const stanza = {
         attrs: {
           type: 'groupchat',
@@ -1369,8 +1353,7 @@ describe('XmppBot', function() {
         },
         name: 'message',
         getChild() {
-          let body;
-          return body = {
+          return {
             getText() {
               return '@bot howdy';
             }
@@ -1379,9 +1362,9 @@ describe('XmppBot', function() {
       };
       bot.receive = function(message) {
         assert.equal(message, '@bot howdy');
-        return done();
+        done();
       };
-      return bot.read(stanza);
+      bot.read(stanza);
     });
   });
 });

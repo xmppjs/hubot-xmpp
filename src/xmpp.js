@@ -1,11 +1,10 @@
+'use strict';
+
 /*
  * decaffeinate suggestions:
- * DS001: Remove Babel/TypeScript constructor workaround
- * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
  * DS103: Rewrite code to no longer use __guard__
  * DS205: Consider reworking code to avoid use of IIFEs
- * DS206: Consider reworking classes to avoid initClass
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
@@ -91,7 +90,7 @@ class XmppBot extends Adapter {
       preferred: options.preferredSaslMechanism,
       disallowTLS: options.disallowTLS
     });
-    return this.configClient(options);
+    this.configClient(options);
   }
 
   configClient(options) {
@@ -103,15 +102,15 @@ class XmppBot extends Adapter {
     this.client.on('offline', this.offline);
     this.client.on('stanza', this.read);
 
-    return this.client.on('end', () => {
+    this.client.on('end', () => {
       this.robot.logger.info('Connection closed, attempting to reconnect');
-      return this.reconnect();
+      this.reconnect();
     });
   }
 
   error(error) {
-      return this.robot.logger.error(`Received error ${error.toString()}`);
-    }
+    this.robot.logger.error(`Received error ${error.toString()}`);
+  }
 
   online() {
     this.robot.logger.info('Hubot XMPP client online');
@@ -125,11 +124,11 @@ class XmppBot extends Adapter {
     this.client.send(presence);
     this.robot.logger.info('Hubot XMPP sent initial presence');
 
-    for (let room of Array.from(this.options.rooms)) { this.joinRoom(room); }
+    for (let room of this.options.rooms) { this.joinRoom(room); }
 
     this.emit(this.connected ? 'reconnected' : 'connected');
     this.connected = true;
-    return this.reconnectTryCount = 0;
+    this.reconnectTryCount = 0;
   }
 
   ping() {
@@ -137,12 +136,12 @@ class XmppBot extends Adapter {
     ping.c('ping', {xmlns: 'urn:xmpp:ping'});
 
     this.robot.logger.debug(`[sending ping] ${ping}`);
-    return this.client.send(ping);
+    this.client.send(ping);
   }
 
   parseRooms(items) {
     const rooms = [];
-    for (let room of Array.from(items)) {
+    for (let room of items) {
       const index = room.indexOf(':');
       rooms.push({
         jid:      room.slice(0, index > 0 ? index : room.length),
@@ -180,7 +179,7 @@ class XmppBot extends Adapter {
       };
       this.robot.logger.info(`Joining ${room.jid} with ${room_id}`);
       this.joining[room_id] = room.jid;
-      return this.client.send(new Stanza('message', params).c('body').t(room_id));
+      this.client.send(new Stanza('message', params).c('body').t(room_id));
     }
   }
 
@@ -238,7 +237,7 @@ class XmppBot extends Adapter {
 
   // XMPP invite to a room, directly - http://xmpp.org/extensions/xep-0249.html
   sendInvite(room, invitee, reason) {
-    return this.client.send((() => {
+    this.client.send((() => {
       this.robot.logger.debug(`Inviting ${invitee} to ${room.jid}`);
       const message = new Stanza('message',
         {to : invitee});
@@ -288,7 +287,7 @@ class XmppBot extends Adapter {
       const userItems = stanza.children[0].children;
 
       // Note that this contains usernames and NOT the full user JID.
-      const usersInRoom = (Array.from(userItems).map((item) => item.attrs.name));
+      const usersInRoom = userItems.map((item) => item.attrs.name);
       this.robot.logger.debug(`[users in room] ${roomJID} has ${usersInRoom}`);
 
       return this.emit(`completedRequest${stanza.attrs.id}`, usersInRoom);
@@ -318,7 +317,7 @@ class XmppBot extends Adapter {
 
     if (stanza.attrs.type === 'groupchat') {
       // Everything before the / is the room name in groupchat JID
-      [room, user] = Array.from(from.split('/'));
+      [room, user] = from.split('/');
 
       // ignore our own messages in rooms or messaged without user part
       if ((user === undefined) || (user === "") || (user === this.robot.name)) { return; }
@@ -330,7 +329,7 @@ class XmppBot extends Adapter {
       // Not sure how to get the user's alias. Use the username.
       // The resource is not the user's alias but the unique client
       // ID which is often the machine name
-      [user] = Array.from(from.split('@'));
+      [user] = from.split('@');
       // Not from a room
       room = undefined;
       // Also store the private JID so we can use it in the send method
@@ -355,7 +354,7 @@ class XmppBot extends Adapter {
     if (privateChatJID) { user.privateChatJID = privateChatJID; }
 
     // only process persistent chant messages if we have matched a join
-    if ((process.env.HUBOT_XMPP_UUID_ON_JOIN != null) && (stanza.attrs.type === 'groupchat') && !Array.from(this.joined).includes(user.room)) { return; }
+    if ((process.env.HUBOT_XMPP_UUID_ON_JOIN != null) && (stanza.attrs.type === 'groupchat') && !this.joined.includes(user.room)) { return; }
 
     this.robot.logger.debug(`Received message: ${message} in room: ${user.room}, from: ${user.name}. Private chat JID is ${user.privateChatJID}`);
 
@@ -438,7 +437,7 @@ class XmppBot extends Adapter {
         break;
 
       case 'unavailable':
-        [room, user] = Array.from(stanza.attrs.from.split('/'));
+        [room, user] = stanza.attrs.from.split('/');
 
         // ignore presence messages that sometimes get broadcast
         if (!this.messageFromRoom(room)) { return; }
@@ -479,7 +478,7 @@ class XmppBot extends Adapter {
 
   // Checks that the room parameter is a room the bot is in.
   messageFromRoom(room) {
-    for (let joined of Array.from(this.options.rooms)) {
+    for (let joined of this.options.rooms) {
       if (joined.jid.toUpperCase() === room.toUpperCase()) { return true; }
     }
     return false;
@@ -488,7 +487,7 @@ class XmppBot extends Adapter {
   send(envelope, ...messages) {
     return (() => {
       const result = [];
-      for (var msg of Array.from(messages)) {
+      for (var msg of messages) {
         var message;
         this.robot.logger.debug(`Sending to ${envelope.room}: ${msg}`);
 
@@ -531,7 +530,7 @@ class XmppBot extends Adapter {
   }
 
   reply(envelope, ...messages) {
-    return Array.from(messages).map((msg) =>
+    return messages.map((msg) =>
       msg instanceof Element ?
         this.send(envelope, msg)
       :
