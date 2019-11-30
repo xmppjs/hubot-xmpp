@@ -10,7 +10,7 @@
  */
 const {Adapter,Robot,TextMessage,EnterMessage,LeaveMessage} = require('hubot/es2015');
 const {JID, Stanza, Client, parse, Element} = require('node-xmpp-client');
-const uuid = require('uuid');
+const uuid = require('uuid/v4');
 const util = require('util');
 
 class XmppBot extends Adapter {
@@ -172,7 +172,7 @@ class XmppBot extends Adapter {
 
     if (process.env.HUBOT_XMPP_UUID_ON_JOIN != null) {
       // send a guid message and ignore any responses until that's been received
-      const room_id = uuid.v4();
+      const room_id = uuid();
       const params = {
         to: room.jid,
         type: 'groupchat'

@@ -7,7 +7,6 @@ const {Adapter,Robot,EnterMessage,LeaveMessage} = require('hubot');
 
 const assert = require('assert');
 const sinon  = require('sinon');
-const uuid = require('uuid');
 
 describe('XmppBot', function() {
   describe('#parseRooms()', function() {
@@ -745,49 +744,66 @@ describe('XmppBot', function() {
       assert.ok(bot.heardOwnPresence);
     });
 
-    // FIXME decaffeinate failed to compile these
-    // # Don't trigger enter messages in a room, until we get our
-    // # own enter message.
-    // it 'should not send event if we have not heard our own presence', () ->
-    //   bot.heardOwnPresence = false
-    //   bot.receive = (msg) ->
-    //     throw new Error('Should not send a message yet')
+    // Don't trigger enter messages in a room, until we get our
+    // own enter message.
+    it('should not send event if we have not heard our own presence', () => {
+      bot.heardOwnPresence = false
+      bot.receive = (msg) => {
+        throw new Error('Should not send a message yet')
+      }
 
-    //   stanza =
-    //     attrs:
-    //       type: 'available'
-    //       to: 'bot@example.com'
-    //       from: 'test@example.com/mark'
-    //     getChild: ->
-    //       x =
-    //         getChild: ->
-    //           {} =
-    //             attrs:
-    //               jid: 'bot@example.com'
+      const stanza = {
+        attrs: {
+          type: 'available',
+          to: 'bot@example.com',
+          from: 'test@example.com/mark'
+        },
+        getChild() {
+          return {
+            getChild() {
+              return {
+                attrs: {
+                  jid: 'bot@example.com'
+                }
+              }
+            }
+          }
+        }
+      }
 
-    //   bot.readPresence stanza
+      bot.readPresence(stanza)
+    })
 
-    // it 'should call @receive when someone joins', () ->
-    //   bot.heardOwnPresence = true
+    it('should call @receive when someone joins', () => {
+      bot.heardOwnPresence = true
 
-    //   bot.receive = (msg) ->
-    //     assert.equal msg.user.name, 'mark'
-    //     assert.equal msg.user.room, 'test@example.com'
-    //     assert.equal msg.user.privateChatJID, 'mark@example.com/mark'
+      bot.receive = (msg) => {
+        assert.equal(msg.user.name, 'mark')
+        assert.equal(msg.user.room, 'test@example.com')
+        assert.equal(msg.user.privateChatJID, 'mark@example.com/mark')
+      }
 
-    //   stanza =
-    //     attrs:
-    //       type: 'available'
-    //       to: 'bot@example.com'
-    //       from: 'test@example.com/mark'
-    //     getChild: ->
-    //       x =
-    //         getChild: ->
-    //           {} =
-    //             attrs:
-    //               jid: 'mark@example.com/mark'
+      const stanza = {
+        attrs: {
+          type: 'available',
+          to: 'bot@example.com',
+          from: 'test@example.com/mark'
+        },
+        getChild() {
+          return {
+            getChild() {
+              return {
+                attrs: {
+                  jid: 'mark@example.com/mark'
+                }
+              }
+            }
+          }
+        }
+      }
 
-    //   bot.readPresence stanza
+      bot.readPresence(stanza)
+    })
 
     it('should call @receive when someone leaves', function() {
       bot.receive = msg => assert.equal(msg.user.room, 'test@example.com');
@@ -1251,11 +1267,11 @@ describe('XmppBot', function() {
 
   describe('uuid_on_join', function() {
     beforeEach(function() {
-      uuid['v4'] = () => 'fake-uuid-for-testing';
       process.env.HUBOT_XMPP_UUID_ON_JOIN = true;
     });
 
     const bot = Bot.use();
+    let memo_uuid
 
     bot.client =
       {stub: 'xmpp client'};
@@ -1287,7 +1303,9 @@ describe('XmppBot', function() {
       bot.client.send = function(message) {
         if (message.name === 'body') {
           assert.equal(message.children.length, 1);
-          assert.equal(message.children[0], 'fake-uuid-for-testing');
+          // https://stackoverflow.com/questions/19989481/how-to-determine-if-a-string-is-a-valid-v4-uuid#answer-19989922
+          assert(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i.test(message.children[0]))
+          memo_uuid = message.children[0]
           done();
         }
       };
@@ -1326,7 +1344,7 @@ describe('XmppBot', function() {
         getChild() {
           return {
             getText() {
-              return 'fake-uuid-for-testing';
+              return memo_uuid;
             }
           };
         }
