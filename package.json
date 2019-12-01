@@ -1,7 +1,7 @@
 {
   "name": "hubot-xmpp",
   "description": "XMPP adapter for Hubot.",
-  "repository": "github:xmppjs/hubot-xmpp.js",
+  "repository": "github:xmppjs/hubot-xmpp",
   "homepage": "https://github.com/xmppjs/hubot-xmpp",
   "bugs": "http://github.com/xmppjs/hubot-xmpp/issues",
   "version": "0.3.0",
